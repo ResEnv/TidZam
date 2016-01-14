@@ -4,7 +4,6 @@ class Classifier
   me = this
 
   constructor: (file, clb, show = "--show") ->
-    console.log 'here '  + file
     me.file = file
     me.show = show
     me.conf = {}
@@ -25,7 +24,7 @@ class Classifier
           tmp2 = JSON.parse(msg.toString())
           if tmp2.classifiers
             me.conf	= tmp2;
-        catch err then console.log 'Classifier error: ' + err
+        catch err then #console.log 'Classifier error: ' + err
         me.clb 0, msg
         msg = tmp[1]
 

@@ -17,8 +17,6 @@ class controller
 
 		me.serv.setSampleFile(me.streamer.getSampleFile())
 
-
-
 		me.serv.io.on 'connection', (socket) ->
 			me.socket = socket
 

@@ -51,7 +51,7 @@ function Controller(parent){
       charts.process(json);
     }
     catch(err){
-      console.log("Error on received data: " + msg.toString());
+      // console.log("Error on received data: " + msg.toString());
     }
   });
 }
