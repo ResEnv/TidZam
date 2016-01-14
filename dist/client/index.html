@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>jQuery UI Menu - Default functionality</title>
+  <link rel="stylesheet" href="//code.jquery.com/ui/1.11.4/themes/smoothness/jquery-ui.css">
+  <script src="//code.jquery.com/jquery-1.10.2.js"></script>
+  <script src="//code.jquery.com/ui/1.11.4/jquery-ui.js"></script>
+  <script src="https://cdn.socket.io/socket.io-1.2.0.js"></script>
+  <script type="text/javascript" src="https://www.google.com/jsapi"></script>
+
+  <script src="menu.js"></script>
+  <script src="player.js"></script>
+  <script src="controller.js"></script>
+  <script src="classifier_chart.js"></script>
+
+
+  <!--  <link rel="stylesheet" href="/resources/demos/style.css">-->
+
+  <script>
+  google.load('visualization', '1.1', {'packages':['line']});
+  ready = false;
+  google.setOnLoadCallback(function(){ready = true;});
+
+  window.onload =   function() {
+    socket = socket = io();
+
+    var main    = document.getElementById("main");
+    controller  = new Controller(main);
+    menu        = new Menu(controller, main);
+  };
+  </script>
+  <style>
+  .ui-menu { width: 250px; }
+  .table_info {border-marging:12px; font-size:10px;text-align:center;}
+  .plot{margin-bottom: 20px;}
+  </style>
+</head>
+<body>
+  <div id="main"></diV>
+  </body>
+  </html>

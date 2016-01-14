@@ -1,0 +1,17 @@
+{
+  "name": "nodejs",
+  "version": "0.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "compile": "(coffee --compile --output dist --watch src &);",
+    "start": "node ./dist/index.js",
+    "test": "mocha -w --compilers coffee:coffee-script/register"
+  },
+  "author": "",
+  "license": "BSD-2-Clause",
+  "devDependencies": {
+    "should": "~8.1.1",
+    "mocha": "~2.3.4"
+  }
+}
