@@ -17,7 +17,7 @@ function Player(parent){
   ';
 
   this.dialog = $( '#dialog-player'  ).dialog({
-    autoOpen: false,
+    autoOpen: true,
     height: 350,
     width: 690,
     modal: false,
@@ -40,6 +40,8 @@ function Player(parent){
         $( '#audio_player' ).trigger('play');
       },
       Play: function(){
+        if(!document.getElementById('audio_player').paused && !document.getElementById('audio_player').played.length)
+          $( '#audio_player'  ).load();
         socket.emit('sys', JSON.stringify(
           {sys:{control:'play'}}
         ))

@@ -13,15 +13,14 @@ function Controller(parent){
 
   $( "#dialog-console" ).dialog({
     autoOpen: false,
-    width: 300,
-    height: 400,
+    width: 272,
     modal: false,
   });
   $( "#dialog-console" ).html(
-    '<div id="dialog-output" style="height:300px;"></div>' +
-    '<input type="text" id="dialog-event" style="width:30px;">'+
-    '<input type="text" id="dialog-input">'+
-    '<input type="button" id="dialog-send" value="Send" style="width:100%;">'
+    '<div id="dialog-output" style="height:230px;"></div>' +
+    '<input type="text" id="dialog-event" style="width:30px;" value="sys">'+
+    '<input type="text" id="dialog-input" style="width:160px;">'+
+    '<input type="button" id="dialog-send" value="Send">'
   );
 
   $( "#dialog-send" ).on("click", function(){

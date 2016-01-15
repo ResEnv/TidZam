@@ -21,10 +21,10 @@ function Menu (controller, parent) {
   </li> \
   <li>Dataset Builder</li> \
   <li>Classifier Trainer</li> \
-  <li>Neural Knowledge Unit\
+  <li>Sound Recognition Engine\
   <ul> \
   <li OnClick="controller.openPlayer();"> Controller </li>\
-  <li OnClick="controller.openNeuralOutputs();"> Grahical View</li>\
+  <li OnClick="controller.openNeuralOutputs();"> Chart View</li>\
   </ul>\
   </li> \
   </ul>\
