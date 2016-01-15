@@ -3,6 +3,8 @@ class Server
   constructor: (port) ->
     me.port         = @port           = port = port
     me.sample_file  = @sample_file    = "tmp/sample.wav"
+    me.fft_file     = @fft_file    = "tmp/fft.png"
+    me.storePath     = @storePath    = "data/stores/"
     @app = app       = require("express")()
     @server = server = require('http').Server(app)
     @io = io         = require('socket.io')(server);
@@ -16,15 +18,17 @@ class Server
       catch err
         console.log "Error during reading of" + @sample_file
 
+    app.get "/fft", (req,res) ->
+      try
+        res.sendFile me.fft_file, { root: __dirname + '/../' }
+      catch err
+        console.log "Error during reading of" + me.fft_file
+
     app.get /^(.+)$/, (req,res) ->
         res.sendfile  __dirname + req.params[0];
 
-    io.on 'connection', (socket) ->
-      console.log "connection : "
-#      setTimeout (->io.emit 'data', 'test'),1000
-
-      socket.on 'chat message', (msg) ->
-        io.emit 'chat message', msg
+  getStorePath: ->
+    @storePath
 
   setSampleFile: (file) ->
     @sample_file = file

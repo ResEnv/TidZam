@@ -3,7 +3,7 @@ spawn = require('child_process').spawn
 class Classifier
   me = this
 
-  constructor: (file, clb, show = "--show") ->
+  constructor: (file, clb, show = "") ->
     me.file = file
     me.show = show
     me.conf = {}
@@ -16,6 +16,7 @@ class Classifier
     ctr = spawn('octave',["./octave/predict.m","--auto", "--stream="+me.file, me.show]);
     msg = new String()
     ctr.stdout.on 'data', (data) ->
+#      console.log data.toString()
       tmp = data.toString().toString().split("\n")
       msg += tmp[0]
 

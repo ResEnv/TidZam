@@ -1,3 +1,4 @@
+fs = require('fs')
 
 class controller
 	me = this
@@ -13,9 +14,8 @@ class controller
 		me.classifier  = new (require('./classifier.js')).Classifier me.streamer.getSampleFile(), (code, data) ->
 			if me.socket
 				me.socket.emit 'data', data
-		me.classifier.start()
 
-		me.serv.setSampleFile(me.streamer.getSampleFile())
+		me.classifier.start()
 
 		me.serv.io.on 'connection', (socket) ->
 			me.socket = socket
@@ -32,16 +32,24 @@ class controller
 					if !sys
 						throw "Not a sys object"
 				catch err
-						console.log "WARNING: Socket error for sys event: " + msg
+						console.log "WARNING: Socket error for sys event: " + err + " "+ msg
 						return
 
-				switch
-					when sys.control then me.streamer.control(sys.control)
-					when sys.url		 then me.streamer.url = sys.url
+				if sys.control then me.streamer.control(sys.control)
+				if sys.url		 then me.streamer.url = me.serv.getStorePath() + sys.url
+				if sys.stores? then me.getStores(sys.stores)
 
+	@getStores: ->
+		fs.readdir me.serv.getStorePath(), (err, items) ->
+			if !items
+				console.log "Store folder empty: " + me.serv.getStorePath()
+				return
 
+			res = [];
+			for store in items
+				if /ogg/i.test(store) then res.push(store)
 
-
+			me.socket.emit 'sys', JSON.stringify({sys:{stores:res}})
 
 
 

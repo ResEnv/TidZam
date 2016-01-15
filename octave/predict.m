@@ -103,17 +103,20 @@ print_conf(nns, TIME);
 % Prediction on sample
 [X S f t, CHANNEL] = sample_spectogram_sound(STREAM, 1);
 TIME = TIME / CHANNEL
+global SIZE_WINDOW;
 do
 	for chan=1:2
 	try
 		[X S f t, CHANNEL] = sample_spectogram_sound(STREAM, chan);
 		res = {};
 
+		v=X';
 		if SHOW == 1
-%			imagesc (t, f, S);
-%			set (gca, "ydir", "normal");
-sample_show(X);
+			visualize(v, [min(min(v)) max(max(v))], SIZE_WINDOW(1,1),SIZE_WINDOW(1,2));
 			title(chan);
+		else
+			a = visualize(v, [min(min(v)) max(max(v))], SIZE_WINDOW(1,1),SIZE_WINDOW(1,2));
+			imwrite (a, 'tmp/fft.png')
 		end
 
 		if size(X,2) < 100

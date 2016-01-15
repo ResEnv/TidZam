@@ -8,7 +8,7 @@ class Streamer
     me.sample_file  = me.buffer_path + "sample.wav"
     me.SAMPLE_SIZE  = 0.5
     me.sample_count = 0
-    me.url          = "stream.ogg"
+    @url = me.url   = "stream.ogg"
     me.state        = "loading"
     me.clb          = f
 
@@ -45,7 +45,7 @@ class Streamer
 
   loading: ->
     @setState('loading')
-    @startBuffering me.url, (code, data) ->
+    @startBuffering @url, (code, data) ->
       if !code || 0
         me.prototype.convertOggtoWav data, (code, data) ->
           if !code || 0
@@ -85,7 +85,7 @@ class Streamer
 
   control: (ctr) ->
     switch (ctr)
-      when 'load' then  @loading()
+      when 'resume' then  @loading()
       when 'play' then  @play()
       when 'pause' then @pause()
 

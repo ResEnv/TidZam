@@ -13,25 +13,31 @@ function Player(parent){
   <option value="http://doppler.media.mit.edu:8000/audiocell3a.ogg">From doppler.media.mit.edu</option>\
   </select><br><br>\
   <span id="results" style="text-align:center;width:100%;">Results</span>\
+  <img src="/fft.png" id="img_fft">\
   ';
 
   this.dialog = $( '#dialog-player'  ).dialog({
     autoOpen: false,
-    height: 300,
-    width: 470,
+    height: 350,
+    width: 690,
     modal: false,
     buttons: {
+      Update: function(){
+        socket.emit('sys', JSON.stringify(
+          {sys:{stores:''}}
+        ));
+      },
       Mute: function(){
         if (document.getElementById('audio_player' ).paused == false)
              $( '#audio_player' ).trigger('pause');
         else $('#audio_player' ).trigger('play');
       },
-      Load: function(){
+      Resume: function(){
+        socket.emit('sys', JSON.stringify(
+          {sys:{control:'resume'}}
+        ));
         $( '#audio_player'  ).load();
         $( '#audio_player' ).trigger('play');
-        socket.emit('sys', JSON.stringify(
-          {sys:{control:'load'}}
-        ))
       },
       Play: function(){
         socket.emit('sys', JSON.stringify(
@@ -71,31 +77,43 @@ function Player(parent){
   });
 
   $( '#audio_player'  ).on('ended', function(){
-    $( '#audio_player'  ).attr('src',
-    $( '#audio_selection option:selected' ).val() + '?time='+ ((new Date()).getTime()));
+    $( '#audio_player'  ).attr('src', '/stream/?time='+ ((new Date()).getTime()));
     $( '#audio_player'  ).load();
     $( '#audio_player' ).trigger('play');
   });
 
   $( '#audio_selection'  ).on('change', function(ev, ui){
-    $( '#audio_player'  ).attr('src',
-    $( '#audio_selection option:selected' ).val());
-
-    if (socket || 0)
-      socket.emit('sys',"{ sys: { url: ' " + $( '#audio_selection option:selected' ).val() + " } }");
+    if (socket || 0){
+      socket.emit('sys', '{ "sys": { "url": "' + $( '#audio_selection option:selected' ).val() + '" } }');
+      socket.emit('sys', JSON.stringify(
+        {sys:{control:'resume'}}
+      ));
+      $( '#audio_player'  ).load();
+      $( '#audio_player' ).trigger('play');
+    }
     else console.log("no socket");
   });
   /****/
 
   this.show = function(){
     this.dialog.dialog('open');
+    socket.emit('sys', JSON.stringify(
+      {sys:{stores:''}}
+    ));
   }
 
   this.process = function(json){
-    if (json.analysis && json.chan)
+    if (json.analysis && json.chan){
+        document.getElementById('img_fft').src = '/fft?time='+((new Date()).getTime());
         $( '#results' ).html( 'Predictions: ' + json.analysis.result + ' (chan:' + json.chan + ')');
+      }
 
-
+    if(json.sys)
+      if (json.sys.stores){
+        $( '#audio_selection' ).empty();
+        for (var i=0; i < json.sys.stores.length; i++)
+          $( '#audio_selection' ).append($("<option></option>").attr("value", json.sys.stores[i]).text(json.sys.stores[i]));
+        }
     /****/
   }
 }

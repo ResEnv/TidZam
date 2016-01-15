@@ -35,21 +35,21 @@ function [S, f, t] =  sample_spectogram (x, Fs)
 
 	if LOG
 		S = log(S);
-		S = S/ max(max(abs(S))); 
+		S = S/ max(max(abs(S)));
 		S = abs(S);
 	end
 end;
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function sample_show(x)
-	v=x'; 
+	v=x';
 	global SIZE_WINDOW;
 	visualize(v, [min(min(v)) max(max(v))], SIZE_WINDOW(1,1),SIZE_WINDOW(1,2));
 end
 
 function [X S f t, channels] = sample_spectogram_sound(name_file, channel)
 	addpath(genpath('Learning'));
-	
+
 	if exist("channel") == 0
 		channel = 1;
 	end
@@ -77,7 +77,7 @@ function [X channels] = sample_spectogram_show(name_file, channel)
 	title_tmp = title_tmp(title_start:end);
 	title(title_tmp);
 	colorbar
-	set (gca, "ydir", "normal"); 
+	set (gca, "ydir", "normal");
 	refresh ();
 end
 
@@ -91,12 +91,12 @@ function sample_show_class(X, Y, classe, m, labels)
 
 	figure;
 	sample_show(X(id,:));
-	
+
 	if exist("labels")
-		title(sprintf("Class: %s", labels{classe})); 
+		title(sprintf("Class: %s", labels{classe}));
 	else	title(sprintf("Class: %d", classe));  end
 
-	
+
 end
 
 function [r] =  reshape_samples(v, x_ori,y_ori, x_dst,y_dst)
@@ -128,7 +128,7 @@ function [train_x train_y X test_x test_y] = reshape_samples_from_file(categ)
 	train_y = train_y( [1: (floor(size(train_y,1) / 100)*100) ],:);
 	size(train_x)
 
-	id1 = find(sum(abs(train_y.-[1 0]),2) == 0 );	
+	id1 = find(sum(abs(train_y.-[1 0]),2) == 0 );
 	X = train_x(id1,:);
 	X = X( [1: (floor(size(X,1) / 100)*100) ],:);
 	size(X)
@@ -192,23 +192,23 @@ function [res_x res_y] = dataset_random_ordered(x, y)
 				classe 		= zeros(1,size(y,2));
 				classe(j) 	= 1;
 				res_y = [res_y; classe];
-			else 
+			else
 				printf(" [DONE]\n");
-				return			
+				return
 			end
 		end
 		if mod(i,100) == 0
 			printf("*");
 		end
 	end
-end 
+end
 
 % Return the number of elements in each class contained in dataset Y
 % In: dataset Y
 % Out: Vector of number of elements by class
 function count = dataset_example_count_by_class (Y)
 	nb_class = size(Y,2);
-	
+
 	count = [];
 	for i=1:nb_class
 		classe 		= zeros(1,nb_class);
@@ -281,7 +281,7 @@ function [train_x train_y test_x test_y labels] = dataset_split_into_training_te
 	if exist("p") == 0
 		p = 0.7;
 	end
-	
+
 	if exist("m") == 0
 		m = 10;
 	end
@@ -291,7 +291,7 @@ function [train_x train_y test_x test_y labels] = dataset_split_into_training_te
 
 	nb_class = size(Y,2);
 	size_by_class = ceil(max( min(dataset_example_count_by_class (Y)), m ) * p);
-	
+
 	if size_by_class < m
 		printf("(Not enough samples for each class) ");
 		return;
@@ -306,7 +306,7 @@ function [train_x train_y test_x test_y labels] = dataset_split_into_training_te
 
 	for i=1:ceil(size(Y,1) * p / size(id1,1) )
 		if ((i+1)*nb_ex > size(id2,1))
-			break; 
+			break;
 		end;
 %1188 3.2 0.031
 		printf("*");
@@ -317,8 +317,8 @@ function [train_x train_y test_x test_y labels] = dataset_split_into_training_te
 		train_y = [train_y; [zeros(nb_ex,1) ones(nb_ex,1)] ];
 	end
 
-	test_x = [ 
-		X(id1(nb_ex:end),:); 
+	test_x = [
+		X(id1(nb_ex:end),:);
 		X(id2(i*nb_ex + 1:end),:)
 		];
 	test_y = [
@@ -352,7 +352,7 @@ return
 		id1 = find(sum(abs(train_y_t.-classe),2) == 0 );
 		classe = [0 1 ];
 		id = find(sum(abs(Y.-classe),2) == 0 );
-		
+
 		for i=1:floor(size(Y,1)*p/size(id1,1))
 			printf("x");
 			train_x = [train_x; train_x(id1,:)];
@@ -373,11 +373,11 @@ return
 	for i=1:nb_class
 		if sum(train_y_t(:,i)) != 0
 			train_y = [train_y train_y_t(:,i)];
-			test_y = [test_y test_y_t(:,i)];	
-			labels{j++} = labels_t{i};	
+			test_y = [test_y test_y_t(:,i)];
+			labels{j++} = labels_t{i};
 		end
 	end
-end 
+end
 
 % Get all labelled datasets in src folder and generated binary datasets for each class
 % m : minimal number of examples to generate the binary dataset for each class
@@ -411,7 +411,7 @@ function dataset_generate_binary_training (src, dst, p, m)
 			printf("(train %d / %d samples  ; test %d / %d samples)\n", size(id_train,1), size(train_y,1) , size(id_test,1), size(test_y,1)  );
 			save(sprintf("%s/dataset-prepared-%s.dat", dst, cl), "train_x", "train_y", "test_x","test_y", "labels");
 			printf("Saved in %s/dataset-prepared-%s.dat\n\n", dst, cl);
-		end	
+		end
 	end
 end
 
@@ -422,7 +422,7 @@ function dataset_build(dst, dst_prepared, src, p, m)
 	if exist("p") == 0
 		p = 0.7;
 	end
-	
+
 	if exist("m") == 0
 		m = 20;
 	end
@@ -467,7 +467,7 @@ function [X] =  dataset_generate_unlabelled (folder, dest)
 		X = [X; S];
 		if mod(i,100) == 0
 			printf("Samples %d DONE ...\n", i);
-		end 
+		end
 	end
 	if exist("dest")
 		save(dest,"X");
@@ -478,7 +478,7 @@ end
 
 % training_labelled : Generate a labelled data set [X,Y]
 %                       folder : folder source of wav samples (stuff-y1-y2-y3.wav)
-%                       dest : Optional destination file to save dataset 
+%                       dest : Optional destination file to save dataset
 function [X Y labels] = dataset_generate_labelled(folder, dest)
 	X = [];
 	Y = [];
@@ -491,17 +491,17 @@ function [X Y labels] = dataset_generate_labelled(folder, dest)
 		% Get position of classe strings
 		pos = findstr(dirlist(i).name(1:end),'-');
 
-		if size(pos,2) < 1	
+		if size(pos,2) < 1
 			# Skip if unlabelled
 			continue;
 		end;
 
 		y = zeros(1,size(Y,2));
 		for k=1:numel(pos)
-			% Get the classe names 
+			% Get the classe names
 			if k < numel(pos)
 				classe = dirlist(i).name(pos(k)+1:pos(k+1));
-			else 
+			else
 				% The last one
 				classe = dirlist(i).name(pos(k)+1:end-4);
 			end
@@ -513,7 +513,7 @@ function [X Y labels] = dataset_generate_labelled(folder, dest)
 					y(j) = 1;
 					done = true;
 				end
-			end			
+			end
 
 			% Create classe if it does not exist
 			if done == false
@@ -570,7 +570,7 @@ function [batchsize nb] = learning_compute_batchsize(Y)
 
 		if nb > 20
 			return
-		end 
+		end
 		batchsize = floor(batchsize / 2);
 
 	until 1
