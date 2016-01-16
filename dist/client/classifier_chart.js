@@ -6,11 +6,28 @@ function ClassifierChart(parent, names){
   this.dialog_chart_name = "dialog-neural-outputs";
   parent.innerHTML +=
   '<div id="'+  this.dialog_chart_name +'" title="Neural Knowledge Units"></div>'+
-  '<div id="dialog-info" title="Details" ></div>';
+  '<div id="dialog-info" title="Details" ></div>' +
+
+  '<div id="dialog-database-new" title="Record database name">'+
+  '<input type="text" id="dialog-database-new-input">'+
+  '<input type="button" id="dialog-database-new-button" value="Create"></div>';
 
   var dialog_info = this.dialog_info =  $( "#dialog-info" ).dialog({
     autoOpen: false,
     modal: false,
+  });
+
+  var dialog_info_database_new = this.dialog_info_database_new =  $( "#dialog-database-new" ).dialog({
+    autoOpen: false,
+    width:350,
+    modal: true,
+  });
+
+  $( '#dialog-database-new-button' ).click(function(){
+    for (i=0; i < plots.length; i++){
+      plots[i].data.addColumn('number', $( '#dialog-database-new-input' ).val());
+    }
+    $ ('#dialog-database-new').dialog('close');
   });
 
   this.dialog_info.update = function(conf){
@@ -32,6 +49,9 @@ function ClassifierChart(parent, names){
     modal: false,
     dialogClass: 'dialog-neural-outputs',
     buttons: {
+      NEW: function(){
+        $ ('#dialog-database-new').dialog('open');
+      },
       YES: function(){
         cl = $('.dialog-neural-outputs .ui-button-text:contains(YES)').text().substr(4);
         socket.emit('sys', JSON.stringify( {sys:{sample: cl, classe:"+"}} ));
@@ -45,6 +65,7 @@ function ClassifierChart(parent, names){
       }
     }
   });
+  $('.dialog-neural-outputs .ui-button-text:contains(NEW)').text("New Database");
   $('.dialog-neural-outputs .ui-button-text:contains(YES)').button().hide();
   $('.dialog-neural-outputs .ui-button-text:contains(NO)').button().hide();
 
@@ -64,7 +85,7 @@ function ClassifierChart(parent, names){
     if (json.classifiers)
       this.dialog_info.update(json);
 
-    else if (json.analysis){
+    if (json.analysis){
 
       // Else simple data for one channel
       var found = false;
@@ -79,6 +100,22 @@ function ClassifierChart(parent, names){
 
       plots[i].updateHistory(json.analysis);
     }
+
+    if (json.sys)
+      if(json.sys.databases)
+        if(obj.sys.databases.list){
+        // Update legend of charts
+        for (i=0; i < obj.sys.databases.list.length; i++)
+          for (j=0; j < plots.length; j++){
+            found = false;
+            for (k=0; k < plots[j].data.getNumberOfColumns(); k++)
+              if (plots[j].data.getColumnLabel(k) == obj.sys.databases.list[i])
+                found = true;
+
+              if (!found)
+                plots[j].data.addColumn('number', obj.sys.databases.list[i]);
+            }
+        }
     else console.log("UNKOWN RECEIVED DATA: " + msg);
   }
 }
@@ -103,7 +140,7 @@ function Chart (parent, name) {
   var chart = this.chart = new google.charts.Line(document.getElementById('plot-'+this.name));
   chart.chan = this.name;
   this.options 	= {
-    'height':310,
+    'height':380,
     'width':'100%',
     chart: {
       title: 'Stream Channel ' + this.name,
@@ -140,22 +177,31 @@ function Chart (parent, name) {
     try {
       var tmp = new Array();
 
+      // Add column of labelled results
       var result = new String();
       for (var key in obj.result){
         result += obj.result[key] + '\n';
       }
       tmp.push(result);
 
+      // Add column according to class prediction values
       for (var key in obj.predicitions){
         var found = false;
         for (j=0; j < this.data.getNumberOfColumns(); j++)
-        if(this.data.getColumnLabel(j) == key)
-        found = true;
+          if(this.data.getColumnLabel(j) == key)
+            found = true;
         if(!found)
-        this.data.addColumn('number', key);
+          this.data.addColumn('number', key);
 
         tmp.push(obj.predicitions[key]);
       }
+
+      // Add column according database Folder
+
+
+      // Complete with the expected number of column
+      while (tmp.length < this.data.getNumberOfColumns())
+        tmp.push(0)
 
       this.data.addRows([tmp]);
 

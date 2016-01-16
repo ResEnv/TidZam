@@ -37,15 +37,14 @@ class controller
 
 				# Control interface between streamer and player
 				if sys.control then me.streamer.control(sys.control)
-				# Set stream file of the streamer
+
 				if sys.url		 then me.streamer.url = me.stream.getStreamPath() + sys.url
-				# Return the list of files in streamPath
+
 				if sys.streams? then me.stream.getStreams (code, data) ->
 					if !code then me.socket.emit 'sys', JSON.stringify {sys:{streams: data }}
 					else console.log "WARNING Error controller: " + data
 
-				if sys.sample && sys.classe
-					me.dataset.addCurrent sys.sample, sys.classe, me.streamer.getSampleFile(), (code, data) ->
+				if sys.sample && sys.classe then me.dataset.addCurrent sys.sample, sys.classe, me.streamer.getSampleFile(), (code, data) ->
 						if !code then console.log 'Added sample ' + data
 						else console.log 'Error adding sample: ' + data
 
@@ -56,5 +55,19 @@ class controller
 				if sys.databases?.build then 	me.dataset.buildDatabase sys.databases?.build, (code,data) ->
 					if !code then console.log "Building dataset " + sys.databases?.build + " done."
 					else console.log "WARNING Building dataset: " + sys.databases?.build + " failed. \n("+data+")"
+
+				if sys.databases?.delete then 	me.dataset.deleteSample sys.databases?.delete, (code,data) ->
+					if !code
+						console.log "Delete sample " + sys.databases?.delete + " done."
+						me.dataset.getPrevSample sys.databases?.delete, (code,data) ->
+							socket.emit 'sys', JSON.stringify {sys:{databases:{show:data}}}
+
+					else console.log "WARNING Delete sample: " + sys.databases?.delete + " failed. \n("+data+")"
+
+				if sys.databases?.do == 'next' && sys.databases?.show then me.dataset.getNextSample sys.databases.show, (code,data) ->
+					socket.emit 'sys', JSON.stringify {sys:{databases:{show:data}}}
+
+				if sys.databases?.do == 'prev' && sys.databases?.show then me.dataset.getPrevSample sys.databases.show, (code,data) ->
+					socket.emit 'sys', JSON.stringify {sys:{databases:{show:data}}}
 
 new controller()

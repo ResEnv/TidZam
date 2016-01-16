@@ -50,6 +50,7 @@ function Controller(parent){
     try {
       json = JSON.parse(msg.toString());
       player.process(json);
+      charts.process(json);
     }
     catch(err){
       console.log("Error on sys: " + err + " "+ msg.toString());

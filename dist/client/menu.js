@@ -16,7 +16,8 @@ function Menu (controller, parent) {
   <li OnClick="controller.openConsole();"> JSON WebSocket</li>\
   <li>Dataset          \
   <ul>                       \
-  <li OnClick="trainer.show()">Build records</li>                \
+  <li OnClick="trainer.show()">Record database</li>                \
+  <li OnClick="trainer.show()">Training sets</li>                \
   </ul>                       \
   </li> \
   <li>Sound Recognition Engine\

@@ -9,11 +9,10 @@ function Player(parent){
   <span id="state" style="text-align:center;width:100%;">State</span><br> \
   OGG Stream:            \
   <select id="audio_selection">\
-  <option value="/stream/">From Online Sampling (delayed)</option>\
-  <option value="http://doppler.media.mit.edu:8000/audiocell3a.ogg">From doppler.media.mit.edu</option>\
+  <option value="/stream/">stream.ogg</option>\
   </select><br><br>\
   <span id="results" style="text-align:center;width:100%;">Results</span>\
-  <img src="/fft.png" id="img_fft">\
+  <img src="/fft" id="img_fft">\
   ';
 
   this.dialog = $( '#dialog-player'  ).dialog({
