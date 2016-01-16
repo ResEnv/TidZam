@@ -12,6 +12,7 @@
   <script src="lib/PNGlib.js"></script>
   <script src="menu.js"></script>
   <script src="player.js"></script>
+  <script src="trainer.js"></script>
   <script src="controller.js"></script>
   <script src="classifier_chart.js"></script>
 
@@ -28,6 +29,7 @@
 
     var main    = document.getElementById("main");
     controller  = new Controller(main);
+    trainer     = new Trainer(main);
     menu        = new Menu(controller, main);
   };
   </script>

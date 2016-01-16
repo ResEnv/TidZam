@@ -1,11 +1,12 @@
 function ClassifierChart(parent, names){
 
+  this.selectedClass = "";
+
   var plots = this.plots = new Array();
-
+  this.dialog_chart_name = "dialog-neural-outputs";
   parent.innerHTML +=
-  '<div id="dialog-neural-outputs" title="Neural Knowledge Units"></div>'+
+  '<div id="'+  this.dialog_chart_name +'" title="Neural Knowledge Units"></div>'+
   '<div id="dialog-info" title="Details" ></div>';
-
 
   var dialog_info = this.dialog_info =  $( "#dialog-info" ).dialog({
     autoOpen: false,
@@ -29,13 +30,31 @@ function ClassifierChart(parent, names){
     autoOpen: false,
     width:600,
     modal: false,
+    dialogClass: 'dialog-neural-outputs',
     buttons: {
+      YES: function(){
+        cl = $('.dialog-neural-outputs .ui-button-text:contains(YES)').text().substr(4);
+        socket.emit('sys', JSON.stringify( {sys:{sample: cl, classe:"+"}} ));
+      },
+      NO: function(){
+      cl = $('.dialog-neural-outputs .ui-button-text:contains(NO)').text().substr(3);
+      socket.emit('sys', JSON.stringify( {sys:{sample: cl, classe:"-"}} ));
+      },
       Information: function(){
         dialog_info.dialog("open");
       }
     }
   });
+  $('.dialog-neural-outputs .ui-button-text:contains(YES)').button().hide();
+  $('.dialog-neural-outputs .ui-button-text:contains(NO)').button().hide();
 
+  this.updateSelectedClass = function(chan, item){
+      this.selectedClass = item;
+      $('.dialog-neural-outputs .ui-button-text:contains(YES)').text('YES '  + this.selectedClass + '('+chan+')');
+      $('.dialog-neural-outputs .ui-button-text:contains(NO)').text('NO ' + this.selectedClass + '('+chan+')');
+      $('.dialog-neural-outputs .ui-button-text:contains(YES)').button().show();
+      $('.dialog-neural-outputs .ui-button-text:contains(NO)').button().show();
+  }
 
   this.show = function(){
     this.dialog.dialog('open');
@@ -55,7 +74,7 @@ function ClassifierChart(parent, names){
         break;
       }
       if (!found){
-        plots.push(new Chart($( '#dialog-neural-outputs'  ), json.chan));
+        plots.push(new Chart(this, json.chan));
       }
 
       plots[i].updateHistory(json.analysis);
@@ -70,17 +89,19 @@ function ClassifierChart(parent, names){
 /***************************************/
 function Chart (parent, name) {
   this.name	= name;
+  parent = this.parent = parent;
   console.log("New Channel " + this.name);
 
-  var div = $(document.createElement('div'));
-  div.attr("id",'plot-'+this.name);
-  div.attr("class",'plot');
-  parent.append(div);
-
+  div_charts = document.getElementById(parent.dialog_chart_name);
+  var div = document.createElement('div');
+  div.id = 'plot-'+this.name;
+  div.class = 'plot';
+  div_charts.appendChild(div);
 
   var data = this.data 	= new google.visualization.DataTable();
   this.data.addColumn('string', '');
   var chart = this.chart = new google.charts.Line(document.getElementById('plot-'+this.name));
+  chart.chan = this.name;
   this.options 	= {
     'height':310,
     'width':'100%',
@@ -109,8 +130,7 @@ function Chart (parent, name) {
       // if row is undefined, we clicked on the legend
       if (sel[0].row === null) {
         var col_name = data.getColumnLabel(sel[0].column);
-// TODO : Extraction for reinforcement
-
+        parent.updateSelectedClass(chart.chan, col_name);
       }
     }
   });

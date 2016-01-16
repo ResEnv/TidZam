@@ -4,7 +4,6 @@ class Server
     me.port         = @port           = port = port
     me.sample_file  = @sample_file    = "tmp/sample.wav"
     me.fft_file     = @fft_file    = "tmp/fft.png"
-    me.storePath     = @storePath    = "data/stores/"
     @app = app       = require("express")()
     @server = server = require('http').Server(app)
     @io = io         = require('socket.io')(server);
@@ -26,9 +25,6 @@ class Server
 
     app.get /^(.+)$/, (req,res) ->
         res.sendfile  __dirname + req.params[0];
-
-  getStorePath: ->
-    @storePath
 
   setSampleFile: (file) ->
     @sample_file = file

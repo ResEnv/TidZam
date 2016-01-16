@@ -1,9 +1,11 @@
-fs = require('fs')
-
 class controller
 	me = this
 
 	constructor: ->
+
+		me.dataset    = new (require('./dataset.js')).Dataset
+		me.stream    = new (require('./stream.js')).Stream
+
 		me.serv 		= new (require('./server.js')).Server (1234)
 		me.serv.start()
 
@@ -14,12 +16,10 @@ class controller
 		me.classifier  = new (require('./classifier.js')).Classifier me.streamer.getSampleFile(), (code, data) ->
 			if me.socket
 				me.socket.emit 'data', data
-
 		me.classifier.start()
 
 		me.serv.io.on 'connection', (socket) ->
 			me.socket = socket
-
 			setTimeout (->
 				me.socket.emit 'data', JSON.stringify(me.classifier.getConf())
 				), 5000
@@ -35,43 +35,26 @@ class controller
 						console.log "WARNING: Socket error for sys event: " + err + " "+ msg
 						return
 
+				# Control interface between streamer and player
 				if sys.control then me.streamer.control(sys.control)
-				if sys.url		 then me.streamer.url = me.serv.getStorePath() + sys.url
-				if sys.stores? then me.getStores(sys.stores)
+				# Set stream file of the streamer
+				if sys.url		 then me.streamer.url = me.stream.getStreamPath() + sys.url
+				# Return the list of files in streamPath
+				if sys.streams? then me.stream.getStreams (code, data) ->
+					if !code then me.socket.emit 'sys', JSON.stringify {sys:{streams: data }}
+					else console.log "WARNING Error controller: " + data
 
-	@getStores: ->
-		fs.readdir me.serv.getStorePath(), (err, items) ->
-			if !items
-				console.log "Store folder empty: " + me.serv.getStorePath()
-				return
+				if sys.sample && sys.classe
+					me.dataset.addCurrent sys.sample, sys.classe, me.streamer.getSampleFile(), (code, data) ->
+						if !code then console.log 'Added sample ' + data
+						else console.log 'Error adding sample: ' + data
 
-			res = [];
-			for store in items
-				if /ogg/i.test(store) then res.push(store)
+				if sys.databases?.list?	then me.dataset.getDatabases (code, data) ->
+					if !code then me.socket.emit 'sys', JSON.stringify {sys:{databases:{list: data }}}
+					else console.log "WARNING Error controller: " + data
 
-			me.socket.emit 'sys', JSON.stringify({sys:{stores:res}})
-
-
-
+				if sys.databases?.build then 	me.dataset.buildDatabase sys.databases?.build, (code,data) ->
+					if !code then console.log "Building dataset " + sys.databases?.build + " done."
+					else console.log "WARNING Building dataset: " + sys.databases?.build + " failed. \n("+data+")"
 
 new controller()
-
-
-###
-			console.log " plop "  + JSON.stringify(me.classifier.getConf()
-
-#	socket.emit 'data', JSON.stringify(me.classifier.getConf())
-
-
-
-stream.startBuffering "./stream.ogg", (code, data) ->
-  if !code || 0
-    stream.convertOggtoWav data, (code, data) ->
-      if !code || 0
-        for i in [0...10]
-          stream.nextSample (code, data) ->
-            console.log data
-
-      else console.log "Wav conversion error: " + data
-  else console.log "Buffering error: " + data
-###

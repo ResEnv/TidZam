@@ -24,7 +24,7 @@ function Player(parent){
     buttons: {
       Update: function(){
         socket.emit('sys', JSON.stringify(
-          {sys:{stores:''}}
+          {sys:{streams:''}}
         ));
       },
       Mute: function(){
@@ -100,7 +100,7 @@ function Player(parent){
   this.show = function(){
     this.dialog.dialog('open');
     socket.emit('sys', JSON.stringify(
-      {sys:{stores:''}}
+      {sys:{streams:''}}
     ));
   }
 
@@ -111,10 +111,10 @@ function Player(parent){
       }
 
     if(json.sys)
-      if (json.sys.stores){
+      if (json.sys.streams){
         $( '#audio_selection' ).empty();
-        for (var i=0; i < json.sys.stores.length; i++)
-          $( '#audio_selection' ).append($("<option></option>").attr("value", json.sys.stores[i]).text(json.sys.stores[i]));
+        for (var i=0; i < json.sys.streams.length; i++)
+          $( '#audio_selection' ).append($("<option></option>").attr("value", json.sys.streams[i]).text(json.sys.streams[i]));
         }
     /****/
   }

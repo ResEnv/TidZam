@@ -12,15 +12,13 @@ function Menu (controller, parent) {
   };
 
   this.parent.innerHTML += '<ul id="menu'+ this.id + '"> \
-  <li OnClick="controller.openConsole();"> JSON WebSocket</li>\
   <li class="ui-state-disabled">TidMarsh</li>\
-  <li>Sample Recorder          \
+  <li OnClick="controller.openConsole();"> JSON WebSocket</li>\
+  <li>Dataset          \
   <ul>                       \
-  <li OnClick="recorder.add()"> Add </li>                \
+  <li OnClick="trainer.show()">Build records</li>                \
   </ul>                       \
   </li> \
-  <li>Dataset Builder</li> \
-  <li>Classifier Trainer</li> \
   <li>Sound Recognition Engine\
   <ul> \
   <li OnClick="controller.openPlayer();"> Controller </li>\
