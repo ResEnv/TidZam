@@ -18,6 +18,7 @@ function Menu (controller, parent) {
   <ul>                       \
   <li OnClick="recorder.show()">Record Databases</li>                \
   <li OnClick="dataset_train.show()">Training Datasets</li>                \
+  <li OnClick="classifiers.show()">Classifier Training</li>                \
   </ul>                       \
   </li> \
   <li>Sound Recognition Engine\

@@ -1,5 +1,4 @@
 function ClassifierChart(parent, names){
-
   this.selectedClass = "";
 
   var plots = this.plots = new Array();
@@ -25,7 +24,7 @@ function ClassifierChart(parent, names){
 
   $( '#dialog-database-new-button' ).click(function(){
     for (i=0; i < plots.length; i++){
-      plots[i].data.addColumn('number', $( '#dialog-database-new-input' ).val());
+      plots[i].data.addColumn('number', '?' + $( '#dialog-database-new-input' ).val());
     }
     $ ('#dialog-database-new').dialog('close');
   });
@@ -57,8 +56,12 @@ function ClassifierChart(parent, names){
         socket.emit('sys', JSON.stringify( {sys:{sample: cl, classe:"+"}} ));
       },
       NO: function(){
-      cl = $('.dialog-neural-outputs .ui-button-text:contains(NO)').text().substr(3);
-      socket.emit('sys', JSON.stringify( {sys:{sample: cl, classe:"-"}} ));
+        cl = $('.dialog-neural-outputs .ui-button-text:contains(NO)').text().substr(3);
+        socket.emit('sys', JSON.stringify( {sys:{sample: cl, classe:"-"}} ));
+      },
+      TOGGLE: function(){
+        cl = $('.dialog-neural-outputs .ui-button-text:contains(TOGGLE)').text().substr(7);
+        socket.emit('sys', JSON.stringify( {sys:{classifier:{toggle:cl}}} ));
       },
       Information: function(){
         dialog_info.dialog("open");
@@ -68,22 +71,43 @@ function ClassifierChart(parent, names){
   $('.dialog-neural-outputs .ui-button-text:contains(NEW)').text("New Database");
   $('.dialog-neural-outputs .ui-button-text:contains(YES)').button().hide();
   $('.dialog-neural-outputs .ui-button-text:contains(NO)').button().hide();
+  $('.dialog-neural-outputs .ui-button-text:contains(TOGGLE)').button().hide();
 
   this.updateSelectedClass = function(chan, item){
-      this.selectedClass = item;
-      $('.dialog-neural-outputs .ui-button-text:contains(YES)').text('YES '  + this.selectedClass + '('+chan+')');
-      $('.dialog-neural-outputs .ui-button-text:contains(NO)').text('NO ' + this.selectedClass + '('+chan+')');
-      $('.dialog-neural-outputs .ui-button-text:contains(YES)').button().show();
-      $('.dialog-neural-outputs .ui-button-text:contains(NO)').button().show();
+    // If we click on a dataset which is not classifier
+    if(item[0] == '!')
+      item = item.substr(1);
+
+    if(item[0] != '?'){
+      $('.dialog-neural-outputs .ui-button-text:contains(TOGGLE)').text('TOGGLE '  + item);
+      $('.dialog-neural-outputs .ui-button-text:contains(TOGGLE)').button().show();
+    }
+    else  {
+      item = item.substr(1);
+      $('.dialog-neural-outputs .ui-button-text:contains(TOGGLE)').button().hide();
+    }
+
+    this.selectedClass = item;
+
+    $('.dialog-neural-outputs .ui-button-text:contains(YES)').text('YES '  + this.selectedClass + '('+chan+')');
+    $('.dialog-neural-outputs .ui-button-text:contains(YES)').button().show();
+
+    $('.dialog-neural-outputs .ui-button-text:contains(NO)').text('NO ' + this.selectedClass + '('+chan+')');
+    $('.dialog-neural-outputs .ui-button-text:contains(NO)').button().show();
   }
 
   this.show = function(){
     this.dialog.dialog('open');
+    socket.emit('sys', JSON.stringify( {sys:{databases:{list:''},classifier: {list:''}}} ));
   }
 
   this.process = function(json){
+
+
+
+
     if (json.classifiers)
-      this.dialog_info.update(json);
+    this.dialog_info.update(json);
 
     if (json.analysis){
 
@@ -95,27 +119,36 @@ function ClassifierChart(parent, names){
         break;
       }
       if (!found){
-        plots.push(new Chart(this, json.chan));
+        plots.push(new Chart(this, json.chan, this.classifier_list));
       }
 
       plots[i].updateHistory(json.analysis);
     }
 
-    if (json.sys)
+    if (json.sys){
+
+      if (json.sys.classifier)
+      if (json.sys.classifier.list)
+      for (i=0; i < this.plots.length; i++)
+      this.plots[i].classifier_list = json.sys.classifier.list;
+
       if(json.sys.databases)
-        if(obj.sys.databases.list){
+      if(obj.sys.databases.list){
         // Update legend of charts
         for (i=0; i < obj.sys.databases.list.length; i++)
-          for (j=0; j < plots.length; j++){
-            found = false;
-            for (k=0; k < plots[j].data.getNumberOfColumns(); k++)
-              if (plots[j].data.getColumnLabel(k) == obj.sys.databases.list[i])
-                found = true;
+        for (j=0; j < plots.length; j++){
+          found = false;
+          for (k=0; k < plots[j].data.getNumberOfColumns(); k++){
+            name = plots[j].data.getColumnLabel(k)[0]=='?' ? plots[j].data.getColumnLabel(k).substr(1):plots[j].data.getColumnLabel(k);
+            if (name == obj.sys.databases.list[i])
+              found = true;
+          }
 
-              if (!found)
-                plots[j].data.addColumn('number', obj.sys.databases.list[i]);
-            }
+          if (!found)
+            plots[j].data.addColumn('number', '?'+obj.sys.databases.list[i]);
         }
+      }
+    }
   }
 }
 
@@ -123,8 +156,10 @@ function ClassifierChart(parent, names){
 /****************************************
 *
 /***************************************/
-function Chart (parent, name) {
+function Chart (parent, name, classifier_list) {
   this.name	= name;
+  this.classifier_list = null;
+
   parent = this.parent = parent;
   console.log("New Channel " + this.name);
 
@@ -183,24 +218,50 @@ function Chart (parent, name) {
       }
       tmp.push(result);
 
-      // Add column according to class prediction values
-      for (var key in obj.predicitions){
-        var found = false;
-        for (j=0; j < this.data.getNumberOfColumns(); j++)
-          if(this.data.getColumnLabel(j) == key)
-            found = true;
-        if(!found)
-          this.data.addColumn('number', key);
+      if (this.classifier_list){
+        for (i=0; i < this.classifier_list.length; i++){
+          found = false;
+          for (j=1; j < this.data.getNumberOfColumns(); j++){
+            n  = this.data.getColumnLabel(j)[0]=='!' || this.data.getColumnLabel(j)[0]=='?' ?this.data.getColumnLabel(j).substr(1): this.data.getColumnLabel(j);
+            if ('classifier-' +  n + '.nn' == this.classifier_list[i]){
 
-        tmp.push(obj.predicitions[key]);
+              running = false;
+              for (var key in obj.predicitions)
+              if(n == key){
+                running = true;
+                break;
+              }
+              found = true;
+              break;
+            }
+          }
+          if(found){
+          name = this.classifier_list[i].substr(11, this.classifier_list[i].indexOf('.nn') - 11);
+
+          if (running) this.data.setColumnLabel(j, name);
+          else         this.data.setColumnLabel(j,'!' + name);
+          }
+          if (!found){
+            name = this.classifier_list[i].substr(11, this.classifier_list[i].indexOf('.nn') - 11);
+            this.data.addColumn('number', name);
+          }
+        }
+
       }
 
-      // Add column according database Folder
+      // Build row according to the order of column
+      for (j=1; j < this.data.getNumberOfColumns(); j++){
+        found = false;
+        for (var key in obj.predicitions)
+        if(this.data.getColumnLabel(j) == key){
+          tmp.push(obj.predicitions[key] );
+          found = true;
+          break;
+        }
 
-
-      // Complete with the expected number of column
-      while (tmp.length < this.data.getNumberOfColumns())
+        if (!found)
         tmp.push(0)
+      }
 
       this.data.addRows([tmp]);
 

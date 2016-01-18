@@ -8,6 +8,7 @@ class Dataset
     me.databasePath     = @databasePath    = "data/database/"
     me.datasetPath      = @datasetPath     = "data/dataset/"
     me.trainingsetPath  = @trainingsetPath = "data/training/"
+    me.classifierPath  = @classifierPath   = "data/classifiers/"
 
   addCurrent: (name, cl, sample_file_path, f) ->
     folder = me.databasePath + '/' + name.substr(0,name.indexOf('(')) + '/';
@@ -27,8 +28,22 @@ class Dataset
         if err then  f(-1, "Error deletion of "+ file)
         else  f(0, "Deletion of "+ file + " done.")
 
-  build: (name) ->
-    console.log 'build ' + name
+  buildClassifier: (name, f) ->
+    dst = me.classifierPath + 'classifier-' + name.split('.')[0] + '.nn';
+    ctr = spawn 'octave', ['octave/build_classifier.m', '--train='+me.trainingsetPath + name, '--classifier-out='+dst, '--dbn']
+    ctr.stdout.on 'data', (data)  -> f?(1,  data.toString())#out += data
+    ctr.stderr.on 'data', (data)  -> f?(-1, data.toString());
+    ctr.on 'close', (code)        -> f?(0,  '');
+
+  getTrainingSets: (f) ->
+    fs.readdir me.trainingsetPath, (err, items) ->
+      if items == null
+        f(-1, "Training folder empty: " + me.trainingsetPath)
+
+      res = [];
+      for trainingset in items
+        if fs.lstatSync(me.trainingsetPath+trainingset).isFile then res.push(trainingset)
+      f(0, res)
 
   getDatabases: (f) ->
     fs.readdir me.databasePath, (err, items) ->
@@ -54,17 +69,17 @@ class Dataset
     out = ''
     dst = me.datasetPath + name + '.dat';
     ctr = spawn 'octave', ['octave/build_database.m', '--folder-in='+me.databasePath + name + '/', '--file-out='+dst, '--classe='+ name]
-    ctr.stdout.on 'data', (data)  -> out += data
-    ctr.stderr.on 'data', (data)  -> f?(-1, data);
-    ctr.on 'close', (code)        -> f?(0, out.substr(out.indexOf('Starting')));
+    ctr.stdout.on 'data', (data)  -> f?(1,  data.toString())#out += data
+    ctr.stderr.on 'data', (data)  -> f?(-1, data.toString());
+    ctr.on 'close', (code)        -> f?(0,  '');
 
   buildDataset: (name, f) ->
-    out = ''
     dst = me.trainingsetPath + name;
     ctr = spawn 'octave', ['octave/build_dataset.m', '--file-in='+name, '--file-out='+dst, '--classe='+ name]
-    ctr.stdout.on 'data', (data)  -> out += data
-    ctr.stderr.on 'data', (data)  -> f?(-1, data);
-    ctr.on 'close', (code)        -> f?(0, out.substr(out.indexOf('Starting')));
+    ctr.stdout.on 'data', (data)  -> f?(1,  data.toString())#out += data
+    ctr.stderr.on 'data', (data)  -> f?(-1, data.toString());
+    ctr.on 'close', (code)        -> f?(0,  '');
+
 
    createFFT: (name) ->
     file = me.databasePath + name.substr(1, name.indexOf('(')-1) + '/' + name
