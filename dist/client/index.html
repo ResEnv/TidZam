@@ -11,7 +11,8 @@
 
   <script src="menu.js"></script>
   <script src="player.js"></script>
-  <script src="trainer.js"></script>
+  <script src="recorder.js"></script>
+  <script src="dataset.js"></script>
   <script src="controller.js"></script>
   <script src="classifier_chart.js"></script>
 
@@ -26,16 +27,26 @@
   window.onload =   function() {
     socket = socket = io();
 
-    var main    = document.getElementById("main");
-    controller  = new Controller(main);
-    trainer     = new Trainer(main);
-    menu        = new Menu(controller, main);
+    var main          = document.getElementById("main");
+    controller        = new Controller(main);
+    dataset_train     = new Dataset(main);
+    recorder          = new Recorder(main);
+    menu              = new Menu(controller, main);
   };
   </script>
   <style>
-  .ui-menu { width: 300px; }
+  .ui-menu { width: 250px; }
   .table_info {border-marging:12px; font-size:10px;text-align:center;}
   .plot{margin-bottom: 20px;}
+
+  .console{
+    background-color:black;
+    color:white;
+  }
+
+  body{
+    font-size:12px;
+  }
   </style>
 </head>
 <body>

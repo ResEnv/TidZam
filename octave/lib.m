@@ -306,9 +306,10 @@ function [train_x train_y test_x test_y labels] = dataset_split_into_training_te
 
 	for i=1:ceil(size(Y,1) * p / size(id1,1) )
 		if ((i+1)*nb_ex > size(id2,1))
+		printf("ici");
 			break;
 		end;
-%1188 3.2 0.031
+
 		printf("*");
 		train_x = [train_x; X( id1(1:nb_ex), :) ];
 		train_y = [train_y; [ones(nb_ex,1) zeros(nb_ex,1)] ];

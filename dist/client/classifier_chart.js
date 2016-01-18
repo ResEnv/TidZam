@@ -116,7 +116,6 @@ function ClassifierChart(parent, names){
                 plots[j].data.addColumn('number', obj.sys.databases.list[i]);
             }
         }
-    else console.log("UNKOWN RECEIVED DATA: " + msg);
   }
 }
 

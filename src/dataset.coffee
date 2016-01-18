@@ -7,6 +7,7 @@ class Dataset
   constructor: ->
     me.databasePath     = @databasePath    = "data/database/"
     me.datasetPath      = @datasetPath     = "data/dataset/"
+    me.trainingsetPath  = @trainingsetPath = "data/training/"
 
   addCurrent: (name, cl, sample_file_path, f) ->
     folder = me.databasePath + '/' + name.substr(0,name.indexOf('(')) + '/';
@@ -31,7 +32,6 @@ class Dataset
 
   getDatabases: (f) ->
     fs.readdir me.databasePath, (err, items) ->
-      console.log items
       if items == null
         f(-1, "Dataset folder empty: " + me.databasePath)
 
@@ -40,11 +40,31 @@ class Dataset
         if fs.lstatSync(me.databasePath+database).isDirectory then res.push(database)
       f(0, res)
 
+  getDatasets: (f) ->
+    fs.readdir me.datasetPath, (err, items) ->
+      if items == null
+        f(-1, "Dataset folder empty: " + me.datasetPath)
+
+      res = [];
+      for dataset in items
+        if fs.lstatSync(me.datasetPath+dataset).isFile then res.push(dataset)
+      f(0, res)
+
   buildDatabase: (name, f) ->
+    out = ''
     dst = me.datasetPath + name + '.dat';
-    ctr = spawn 'octave', ['octave/build.m', '--folder-in='+me.databasePath + name + '/', '--file-out='+dst, '--classe='+ name]
+    ctr = spawn 'octave', ['octave/build_database.m', '--folder-in='+me.databasePath + name + '/', '--file-out='+dst, '--classe='+ name]
+    ctr.stdout.on 'data', (data)  -> out += data
     ctr.stderr.on 'data', (data)  -> f?(-1, data);
-    ctr.on 'close', (code)        -> f?(0, dst);
+    ctr.on 'close', (code)        -> f?(0, out.substr(out.indexOf('Starting')));
+
+  buildDataset: (name, f) ->
+    out = ''
+    dst = me.trainingsetPath + name;
+    ctr = spawn 'octave', ['octave/build_dataset.m', '--file-in='+name, '--file-out='+dst, '--classe='+ name]
+    ctr.stdout.on 'data', (data)  -> out += data
+    ctr.stderr.on 'data', (data)  -> f?(-1, data);
+    ctr.on 'close', (code)        -> f?(0, out.substr(out.indexOf('Starting')));
 
    createFFT: (name) ->
     file = me.databasePath + name.substr(1, name.indexOf('(')-1) + '/' + name

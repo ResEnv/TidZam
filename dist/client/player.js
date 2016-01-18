@@ -17,7 +17,6 @@ function Player(parent){
 
   this.dialog = $( '#dialog-player'  ).dialog({
     autoOpen: true,
-    height: 350,
     width: 690,
     modal: false,
     buttons: {

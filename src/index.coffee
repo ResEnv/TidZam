@@ -35,7 +35,7 @@ class controller
 						console.log "WARNING: Socket error for sys event: " + err + " "+ msg
 						return
 
-				# Control interface between streamer and player
+				# RECOGNITION ENGINE INTERFACE EVENTS
 				if sys.control then me.streamer.control(sys.control)
 
 				if sys.url		 then me.streamer.url = me.stream.getStreamPath() + sys.url
@@ -48,13 +48,32 @@ class controller
 						if !code then console.log 'Added sample ' + data
 						else console.log 'Error adding sample: ' + data
 
+				# TRAINING DATASET EVENTS
+				if sys.datasets?.list? then me.dataset.getDatasets (code,data) ->
+					console.log data
+					if !code then me.socket.emit 'sys', JSON.stringify {sys:{datasets:{list: data }}}
+					else console.log "WARNING Error controller: " + data
+
+				if sys.datasets?.build then 	me.dataset.buildDataset sys.datasets?.build, (code,data) ->
+					if !code
+						console.log "Building dataset " + sys.databases?.build + " done."
+						socket.emit 'sys', JSON.stringify {sys:{datasets:{build:sys.datasets?.build, status:'done',data:data}}}
+					else
+						console.log "WARNING Building dataset: " + sys.datasets?.build + " failed. \n("+data+")"
+						socket.emit 'sys', JSON.stringify {sys:{datasets:{build:sys.datasets?.build, status:'failed',out:data}}}
+
+				# DATABASE RECORD EVENTS
 				if sys.databases?.list?	then me.dataset.getDatabases (code, data) ->
 					if !code then me.socket.emit 'sys', JSON.stringify {sys:{databases:{list: data }}}
 					else console.log "WARNING Error controller: " + data
 
 				if sys.databases?.build then 	me.dataset.buildDatabase sys.databases?.build, (code,data) ->
-					if !code then console.log "Building dataset " + sys.databases?.build + " done."
-					else console.log "WARNING Building dataset: " + sys.databases?.build + " failed. \n("+data+")"
+					if !code
+						console.log "Building database " + sys.databases?.build + " done."
+						socket.emit 'sys', JSON.stringify {sys:{databases:{build:sys.databases?.build, status:'done',data:data}}}
+					else
+						console.log "WARNING Building database: " + sys.databases?.build + " failed. \n("+data+")"
+						socket.emit 'sys', JSON.stringify {sys:{databases:{build:sys.databases?.build, status:'failed',out:data}}}
 
 				if sys.databases?.delete then 	me.dataset.deleteSample sys.databases?.delete, (code,data) ->
 					if !code
