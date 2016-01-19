@@ -48,10 +48,11 @@ for j = 1:length(dirlist)
 end
 
 dataset.database = {};
-dataset.database.size     = current.size;
-dataset.database.yes_size = size(current.yes,1);
-dataset.database.no_size  = size(current.no,1);
-
+dataset.database.size         = current.size;
+dataset.database.yes_size     = size(current.yes,1);
+dataset.database.no_size      = size(current.no,1);
+dataset.database.shape_left   = current.shape_left;
+dataset.database.shape_right  = current.shape_right;
 
 dataset.database.used = [];
 for j = 1:length(dirlist)
@@ -107,6 +108,7 @@ dataset.train_x = X([1:size(X,1)*p], :);
 dataset.train_y = Y([1:size(X,1)*p], :);
 dataset.test_x = X([size(X,1)*p+1:end], :);
 dataset.test_y  = Y([size(X,1)*p+1:end], :);
-printf("Train Dataset: %d samples\n Test Dataset: %d samples\n", size(dataset.train_x,1), size(dataset.test_x,1));
+printf("Train Dataset: %d samples\n Test Dataset: %d samples\nSize:%dx%d,\nshape_left:%d\nshape_right:%d\n", size(dataset.train_x,1), size(dataset.test_x,1), dataset.database.size,dataset.database.shape_left,dataset.database.shape_right);
 
+printf("\nSaving ...");
 save (file_out, "dataset");

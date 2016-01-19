@@ -64,7 +64,7 @@ class controller
 					if !code then me.socket.emit 'sys', JSON.stringify {sys:{training:{list: data }}}
 					else console.log "WARNING Error controller: " + data
 
-				if sys.training?.build then 	me.dataset.buildClassifier sys.training.build, (code,data) ->
+				if sys.training?.build then 	me.dataset.buildClassifier sys.training.build,  sys.training.filter_low, sys.training.filter_high, (code,data) ->
 					if 			code == 0
 						socket.emit 'sys', JSON.stringify {sys:{training:{build:sys.training.build, status:'done',data:data}}}
 						me.classifier.getAvailableClassifiers (code,data) ->
@@ -78,30 +78,47 @@ class controller
 					if !code then me.socket.emit 'sys', JSON.stringify {sys:{datasets:{list: data }}}
 					else console.log "WARNING Error controller: " + data
 
-				if sys.datasets?.build then 	me.dataset.buildDataset sys.datasets?.build, (code,data) ->
+				if sys.datasets?.build then 	me.dataset.buildDataset sys.datasets?.build,  sys.datasets.filter_low, sys.datasets.filter_high, (code,data) ->
 					if 			code == 0	 then	socket.emit 'sys', JSON.stringify {sys:{datasets:{build:sys.datasets.build, status:'done',data:data}}}
 					else if code == 1  then	socket.emit 'sys', JSON.stringify {sys:{datasets:{build:sys.datasets.build, status:'running',data:data}}}
 					else socket.emit 'sys', JSON.stringify {sys:{datasets:{build:sys.datasets.build, status:'failed',out:data}}}
+
+
+
+
+				if sys.datasets?.do == 'next' then me.dataset.getNextSample sys.datasets.show, (code,data) ->
+					socket.emit 'sys', JSON.stringify {sys:{datasets:{show:data}}}
+
+				if sys.datasets?.do == 'prev' then me.dataset.getPrevSample sys.datasets.show, (code,data) ->
+					socket.emit 'sys', JSON.stringify {sys:{datasets:{show:data}}}
+
+
+
+
+
+
 
 				# DATABASE RECORD EVENTS
 				if sys.databases?.list?	then me.dataset.getDatabases (code, data) ->
 					if !code then me.socket.emit 'sys', JSON.stringify {sys:{databases:{list: data }}}
 					else console.log "WARNING Error controller: " + data
 
-				if sys.databases?.build then 	me.dataset.buildDatabase sys.databases?.build, (code,data) ->
-					if 			code == 0	 then	socket.emit 'sys', JSON.stringify {sys:{databases:{build:sys.databases.build, status:'done',data:data}}}
-					else if code == 1  then	socket.emit 'sys', JSON.stringify {sys:{databases:{build:sys.databases.build, status:'running',data:data}}}
-					else socket.emit 'sys', JSON.stringify {sys:{databases:{build:sys.databases.build, status:'failed',out:data}}}
+				if sys.databases?.build
+
+					me.dataset.buildDatabase sys.databases?.build,  sys.databases.filter_low, sys.databases.filter_high, (code,data) ->
+						if 			code == 0	 then	socket.emit 'sys', JSON.stringify {sys:{databases:{build:sys.databases.build, status:'done',data:data}}}
+						else if code == 1  then	socket.emit 'sys', JSON.stringify {sys:{databases:{build:sys.databases.build, status:'running',data:data}}}
+						else socket.emit 'sys', JSON.stringify {sys:{databases:{build:sys.databases.build, status:'failed',out:data}}}
 
 				if sys.databases?.delete then 	me.dataset.deleteSample sys.databases?.delete, (code,data) ->
 					if !code then	me.dataset.getPrevSample sys.databases?.delete, (code,data) ->
 							socket.emit 'sys', JSON.stringify {sys:{databases:{show:data}}}
 					else console.log "WARNING Delete sample: " + sys.databases?.delete + " failed. \n("+data+")"
 
-				if sys.databases?.do == 'next' && sys.databases?.show then me.dataset.getNextSample sys.databases.show, (code,data) ->
+				if sys.databases?.do == 'next' then me.dataset.getNextRecord sys.databases.show, sys.databases.filter_low, sys.databases.filter_high, (code,data) ->
 					socket.emit 'sys', JSON.stringify {sys:{databases:{show:data}}}
 
-				if sys.databases?.do == 'prev' && sys.databases?.show then me.dataset.getPrevSample sys.databases.show, (code,data) ->
+				if sys.databases?.do == 'prev' then me.dataset.getPrevRecord sys.databases.show, sys.databases.filter_low, sys.databases.filter_high, (code,data) ->
 					socket.emit 'sys', JSON.stringify {sys:{databases:{show:data}}}
 
 new controller()

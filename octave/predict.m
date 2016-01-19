@@ -1,5 +1,7 @@
 source octave/lib.m
 
+printf("Starting");
+
 % Init default parameters
 AUTO   	= 0;
 SHOW	= 0;
@@ -120,6 +122,7 @@ print_conf(nns, TIME);
 [X S f t, CHANNEL] = sample_spectogram_sound(STREAM, 1);
 TIME = TIME / CHANNEL
 global SIZE_WINDOW;
+
 do
 	for chan=1:2
 	try
@@ -127,20 +130,25 @@ do
 		res = {};
 
 		v=X';
-		if SHOW == 1
-			visualize(v, [min(min(v)) max(max(v))], SIZE_WINDOW(1,1),SIZE_WINDOW(1,2));
-			title(chan);
-		else
-			a = visualize(v, [min(min(v)) max(max(v))], SIZE_WINDOW(1,1),SIZE_WINDOW(1,2));
-			imwrite (a, 'tmp/fft.png')
-		end
+%		if SHOW == 1
+%			visualize(v, [min(min(v)) max(max(v))], SIZE_WINDOW(1,1),SIZE_WINDOW(1,2));
+%			title(chan);
+%		else
+%			a = visualize(v, [min(min(v)) max(max(v))], SIZE_WINDOW(1,1),SIZE_WINDOW(1,2));
+%			imwrite (a, 'tmp/fft.png')
+%		end
 
 		if size(X,2) < 100
 			continue;
 		end
 		for i=1:size(nns,2)
 			nns{i}{2}.testing 	= 1;
-			nns{i}{2} 		= nnff(nns{i}{2}, X, zeros(size(X,1), nns{i}{2}.size(end)));
+
+			T = S([nns{i}{2}.database.shape_left+1:end],:);
+			T = T([1:end-nns{i}{2}.database.shape_right],:);
+			T = reshape(T, 1, size(T,1)*size(T,2));
+
+			nns{i}{2} 		= nnff(nns{i}{2}, T, zeros(size(T,1), nns{i}{2}.size(end)));
 			nns{i}{2}.testing 	= 0;
 
 
@@ -161,7 +169,7 @@ do
 		print_res(res, chan);
 
 	catch
-		printf("Input error\n");
+		printf('{"result": "No Input"}\n');
 	end_try_catch
 
 	fflush(stdout);

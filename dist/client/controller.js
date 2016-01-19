@@ -48,6 +48,7 @@ function Controller(parent){
   // SOCKET. IO CONNECTOR
   socket.on('sys', function(msg){
     try {
+      $( "#dialog-output" ).html(msg);
       json = JSON.parse(msg.toString());
       player.process(json);
       charts.process(json);

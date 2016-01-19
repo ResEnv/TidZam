@@ -37,6 +37,7 @@ train_x = dataset.train_x;
 train_y = dataset.train_y;
 test_x  = dataset.test_x;
 test_y  = dataset.test_y;
+dataset.database.size
 
 [batchsize nb] = learning_compute_batchsize(train_y)
 [count_by_class] = dataset_example_count_by_class (train_y)
@@ -46,17 +47,13 @@ train_y = train_y([1: batchsize*nb ],:);
 X = [train_x];
 labels
 
-for i=1:size(train_y,2)
-	sample_show_class(train_x,train_y,i,20, labels);
-end
-
 % ================================== LEARNING ==================================
 if SAE
 	[nn sae] = learning_sae(train_x, X, train_y, [64 8], 200, 0.1, 0.5); % 64 8
 	v = sae.ae{1}.W{1}(:,2:end)';
 	figure;
 
-	visualize(v, [min(min(v)) max(max(v))], SIZE_WINDOW(1,1), SIZE_WINDOW(1,2));
+	visualize(v, [min(min(v)) max(max(v))], dataset.database.size(1,1), dataset.database.size(1,2));
 	for i=2:numel(sae.ae)
 		figure
 		visualize(sae.ae{i}.W{1}(:,2:end)');
@@ -68,7 +65,7 @@ else if DBN
 	v = dbn.rbm{1}.W';
 	figure;
 
-	visualize(v, [min(min(v)) max(max(v))], SIZE_WINDOW(1,1), SIZE_WINDOW(1,2));
+	visualize(v, [min(min(v)) max(max(v))], dataset.database.size(1,1), dataset.database.size(1,2));
 	for i=2:numel(dbn.rbm)
 		figure
 		visualize(dbn.rbm{i}.W');
@@ -109,4 +106,8 @@ nn =  nn_evaluate (nn, test_x, test_y, labels);
 
 nn.database = dataset.database;
 nn.labels   = labels;
+
+printf("\nSize:%dx%d\nshape_left:%d\nshape_right:%d\n", nn.database.size, nn.database.shape_left,nn.database.shape_right);
+
+printf("\nSaving ...");
 save("-binary", out,"nn");

@@ -8,11 +8,14 @@ addpath(genpath('lib'));
 % Predicition functions
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-function [S, f, t] =  sample_spectogram (x, Fs)
+function [S, f, t] =  sample_spectogram (x, Fs, FILTER_LOW, FILTER_HIGH)
 	LOG=0;
-	global FILTER_LOW;
-	global FILTER_HIGH;
 
+	if exist("FILTER_LOW") == 0
+ 		global FILTER_LOW;
+		global FILTER_HIGH;
+	end
+	
 	step = fix(5*Fs/1000);     # one spectral slice every 5 ms
 	window = fix(40*Fs/1000);  # 40 ms data window
 	fftn = 2^nextpow2(window); # next highest power of 2

@@ -22,6 +22,21 @@ for i = 1:nargin
   if strncmp(arg_list{i}, "--debug",7)
     DEBUG = 1;
   end
+
+  if strncmp(arg_list{i}, "--shape-left=",13)
+    shape_left = arg_list{i}(14:end);
+  end
+
+  if strncmp(arg_list{i}, "--shape-right=",14)
+    shape_right = arg_list{i}(10:end);
+  end
+  if strncmp(arg_list{i}, "--filter-low=",13)
+     shape_left = str2num(arg_list{i}(14:end));
+  end
+
+  if strncmp(arg_list{i}, "--filter-high=",14)
+    shape_right = str2num(arg_list{i}(15:end));
+  end
 end
 
 printf ("\nFolder in:\t%s\nFile out:\t%s\nClasse:\t\t%s\n\n",folder_in, file_out, classe);
@@ -45,6 +60,9 @@ for j = 1:length(dirlist)
   [x, Fs] = auload(file_in_loadpath( strcat(folder_in, dirlist(j).name(1:end))));
   x=x(:,chan); # select only one channel
   [S, f, t] = sample_spectogram(x, Fs);
+  S = S([shape_left+1:end],:);
+  S = S([1:end-shape_right],:);
+
   size_data =  size(S);
   X = reshape(S, 1, size(S,1)*size(S,2));
 
@@ -53,14 +71,17 @@ for j = 1:length(dirlist)
   else
         cl2 = [cl2 ; X];
   end
-
 end
+
 database = struct ();
 database = setfield (database, "name", classe);
 database = setfield (database, "yes", cl1);
 database = setfield (database, "no", cl2);
 database = setfield (database, "size", size_data);
+database = setfield (database, "shape_left", shape_left);
+database = setfield (database, "shape_right", shape_right);
 
+printf("\nClasse +: %d samples\nClasse -: %d samples\nData size: %dx%d\nshape_left:%d\nshape_right:%d", size(cl1)(1), size(cl2)(1), size_data, database.shape_left,database.shape_right);
 
+printf("\nSaving ...");
 save(file_out, '-binary', 'database');
-printf("\nClasse +: %d samples\nClasse -: %d samples\nData size: %dx%d\n\n", size(cl1)(1), size(cl2)(1), size_data);

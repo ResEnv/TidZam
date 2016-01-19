@@ -59,8 +59,8 @@ function ClassifierChart(parent, names){
         cl = $('.dialog-neural-outputs .ui-button-text:contains(NO)').text().substr(3);
         socket.emit('sys', JSON.stringify( {sys:{sample: cl, classe:"-"}} ));
       },
-      TOGGLE: function(){
-        cl = $('.dialog-neural-outputs .ui-button-text:contains(TOGGLE)').text().substr(7);
+      On_Off: function(){
+        cl = $('.dialog-neural-outputs .ui-button-text:contains(On_Off)').text().substr(7);
         socket.emit('sys', JSON.stringify( {sys:{classifier:{toggle:cl}}} ));
       },
       Information: function(){
@@ -68,10 +68,11 @@ function ClassifierChart(parent, names){
       }
     }
   });
+  $('.dialog-neural-outputs .ui-button-text:contains(On_Off)').text("On_Off");
   $('.dialog-neural-outputs .ui-button-text:contains(NEW)').text("New Database");
   $('.dialog-neural-outputs .ui-button-text:contains(YES)').button().hide();
   $('.dialog-neural-outputs .ui-button-text:contains(NO)').button().hide();
-  $('.dialog-neural-outputs .ui-button-text:contains(TOGGLE)').button().hide();
+  $('.dialog-neural-outputs .ui-button-text:contains(On_Off)').button().hide();
 
   this.updateSelectedClass = function(chan, item){
     // If we click on a dataset which is not classifier
@@ -79,12 +80,12 @@ function ClassifierChart(parent, names){
       item = item.substr(1);
 
     if(item[0] != '?'){
-      $('.dialog-neural-outputs .ui-button-text:contains(TOGGLE)').text('TOGGLE '  + item);
-      $('.dialog-neural-outputs .ui-button-text:contains(TOGGLE)').button().show();
+      $('.dialog-neural-outputs .ui-button-text:contains(On_Off)').text('On_Off '  + item);
+      $('.dialog-neural-outputs .ui-button-text:contains(On_Off)').button().show();
     }
     else  {
       item = item.substr(1);
-      $('.dialog-neural-outputs .ui-button-text:contains(TOGGLE)').button().hide();
+      $('.dialog-neural-outputs .ui-button-text:contains(On_Off)').button().hide();
     }
 
     this.selectedClass = item;
@@ -174,7 +175,7 @@ function Chart (parent, name, classifier_list) {
   var chart = this.chart = new google.charts.Line(document.getElementById('plot-'+this.name));
   chart.chan = this.name;
   this.options 	= {
-    'height':380,
+    'height':400,
     'width':'100%',
     chart: {
       title: 'Stream Channel ' + this.name,

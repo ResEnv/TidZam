@@ -20,7 +20,7 @@ class Classifier
         me.classifiers = data
         me.prototype.start()
       else console.log 'Classifier initialization error'
-        
+
   toggleClassifier: (name, f) ->
     @getAvailableClassifiers (code, data) ->
       found = false
@@ -71,8 +71,17 @@ class Classifier
     ctr = spawn('octave',["./octave/predict.m","--auto", "--stream="+me.file, me.show, "--classifiers-path=" +me.classifiersPath, "--classifiers=" + classifiers]);
 
     msg = new String()
+    ready = false
+
+    ctr.stderr.on 'data', (data) ->
+        console.log data.toString()
+
     ctr.stdout.on 'data', (data) ->
 #      console.log data.toString()
+      if data.toString().indexOf('Starting') != -1
+        ready = true
+      if !ready then return
+
       tmp = data.toString().toString().split("\n")
       msg += tmp[0]
 

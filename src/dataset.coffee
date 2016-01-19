@@ -28,10 +28,19 @@ class Dataset
         if err then  f(-1, "Error deletion of "+ file)
         else  f(0, "Deletion of "+ file + " done.")
 
-  buildClassifier: (name, f) ->
+  buildClassifier: (name, filter_low = 1000, filter_high=10000, f) ->
     dst = me.classifierPath + 'classifier-' + name.split('.')[0] + '.nn';
-    ctr = spawn 'octave', ['octave/build_classifier.m', '--train='+me.trainingsetPath + name, '--classifier-out='+dst, '--dbn']
-    ctr.stdout.on 'data', (data)  -> f?(1,  data.toString())#out += data
+    ctr = spawn 'octave', ['octave/build_classifier.m',
+     '--train='+me.trainingsetPath + name,
+      '--classifier-out='+dst, '--dbn',
+      '--filter-low=' + filter_low,
+      '--filter-high=' + filter_high]
+    ready = false
+    ctr.stdout.on 'data', (data)  ->
+          if data.toString().indexOf('Starting') != -1
+            ready = true
+          if !ready then return
+          f?(1,  data.toString())#out += data
     ctr.stderr.on 'data', (data)  -> f?(-1, data.toString());
     ctr.on 'close', (code)        -> f?(0,  '');
 
@@ -65,49 +74,75 @@ class Dataset
         if fs.lstatSync(me.datasetPath+dataset).isFile then res.push(dataset)
       f(0, res)
 
-  buildDatabase: (name, f) ->
+  buildDatabase: (name, filter_low, filter_high, f) ->
     out = ''
     dst = me.datasetPath + name + '.dat';
-    ctr = spawn 'octave', ['octave/build_database.m', '--folder-in='+me.databasePath + name + '/', '--file-out='+dst, '--classe='+ name]
-    ctr.stdout.on 'data', (data)  -> f?(1,  data.toString())#out += data
+    ctr = spawn 'octave', ['octave/build_database.m', '--folder-in='+me.databasePath + name + '/', '--file-out='+dst, '--classe='+ name, '--filter-low=' + filter_low, '--filter-high=' + filter_high]
+    ready = false
+    ctr.stdout.on 'data', (data)  ->
+      if data.toString().indexOf('Starting') != -1
+        ready = true
+      if !ready then return
+      f?(1,  data.toString())#out += data
     ctr.stderr.on 'data', (data)  -> f?(-1, data.toString());
     ctr.on 'close', (code)        -> f?(0,  '');
 
-  buildDataset: (name, f) ->
+  buildDataset: (name, filter_low = 1000, filter_high=10000, f) ->
     dst = me.trainingsetPath + name;
-    ctr = spawn 'octave', ['octave/build_dataset.m', '--file-in='+name, '--file-out='+dst, '--classe='+ name]
-    ctr.stdout.on 'data', (data)  -> f?(1,  data.toString())#out += data
+    ctr = spawn 'octave', ['octave/build_dataset.m',
+    '--file-in='+name,
+     '--file-out='+dst,
+      '--classe='+ name,
+      '--filter-low=' + filter_low,
+      '--filter-high=' + filter_high]
+    ready = false
+    ctr.stdout.on 'data', (data)  ->
+          if data.toString().indexOf('Starting') != -1
+            ready = true
+          if !ready then return
+          f?(1,  data.toString())#out += data
     ctr.stderr.on 'data', (data)  -> f?(-1, data.toString());
     ctr.on 'close', (code)        -> f?(0,  '');
 
 
-   createFFT: (name) ->
+   createFFT: (name, filter_low = 1000, filter_high=10000) ->
     file = me.databasePath + name.substr(1, name.indexOf('(')-1) + '/' + name
     chan = name.substr(name.indexOf('(')+1, 1)
     dst = 'tmp/database-fft.png';
-    ctr = spawn 'octave', ['octave/printFFT.m', '--file-in='+ file, '--chan='+chan, '--file-out='+ dst]
-    ctr.stderr.on 'data', (data)  -> f?(-1, data);
-    ctr.on 'close', (code)        -> f?(0, dst);
+    ctr = spawn 'octave', ['octave/printFFT.m',
+      '--file-in='+ file,
+      '--chan='+chan,
+      '--file-out='+ dst,
+      '--filter-low=' + filter_low,
+      '--filter-high=' + filter_high]
+    ctr.stderr.on 'data', (data)  -> f?(-1, data)
+    ctr.stdout.on 'data', (data)  -> f?(1,data)
+    ctr.on 'close', (code)        -> f?(0, dst)
 
   me.num = 0;
-  getNextSample: (classe, f) ->
+  me.current = "";
+  getNextRecord: (classe, filter_low, filter_high, f) ->
+    if classe != '' then me.current = classe
+    else                 classe = me.current
     fs.readdir me.databasePath + classe , (err, items) ->
       if items.length == 0
         f -1, "No file in " + me.databasePath + classe
         return
       if ++me.num >= items.length then me.num = 0
-      me.prototype.createFFT(items[me.num])
+      me.prototype.createFFT(items[me.num], filter_low, filter_high)
       f(0,{num:me.num, class:items[me.num].substr(0,1), size:items.length, path: me.databasePath + classe + '/' + items[me.num]})
 
-  getPrevSample: (classe, f) ->
+
+
+  getPrevRecord: (classe, filter_low, filter_high, f) ->
+    if classe != '' then me.current = classe
+    else                 classe = me.current
     fs.readdir me.databasePath + classe , (err, items) ->
       if items.length == 0
         f -1, "No file in " + me.databasePath + classe
         return
       if --me.num < 0 then me.num = 0
-      me.prototype.createFFT(items[me.num])
+      me.prototype.createFFT(items[me.num], filter_low, filter_high)
       f(0, {num:me.num, class:items[me.num].substr(0,1), size:items.length, path: me.databasePath + classe + '/' + items[me.num]})
-
-
 
 exports.Dataset = Dataset
