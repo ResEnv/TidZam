@@ -15,7 +15,7 @@ function [S, f, t] =  sample_spectogram (x, Fs, FILTER_LOW, FILTER_HIGH)
  		global FILTER_LOW;
 		global FILTER_HIGH;
 	end
-	
+
 	step = fix(5*Fs/1000);     # one spectral slice every 5 ms
 	window = fix(40*Fs/1000);  # 40 ms data window
 	fftn = 2^nextpow2(window); # next highest power of 2
@@ -102,20 +102,23 @@ function sample_show_class(X, Y, classe, m, labels)
 
 end
 
-function [r] =  reshape_samples(v, x_ori,y_ori, x_dst,y_dst)
+function [r window_size] =  reshape_samples(v, x_ori,y_ori, x_dst,y_dst)
 	r = [];
 	for i=1:size(v,1)
-		r = [r; reshape_sample(v(i,:), x_ori,y_ori, x_dst,y_dst) ];
+		[t size] = reshape_sample(v(i,:), x_ori,y_ori, x_dst,y_dst);
+		r = [r; t ];
 	end
+	window_size = size;
 end
 
-function [v] =  reshape_sample(v, x_ori,y_ori, x_dst,y_dst)
+function [v window_size] =  reshape_sample(v, x_ori,y_ori, x_dst,y_dst)
 %	figure
 %	sample_show(v);
 
 	v = reshape(v, x_ori, y_ori);
-	v = v([x_dst:end],:);
+	v = v([x_dst+1:end],:);
 	v = v([1:end-y_dst],:);
+	window_size = size(v);
 	v = reshape(v, 1, size(v,1)*size(v,2));
 
 %	figure
@@ -644,7 +647,7 @@ function [nn dbn] = learning_dbn(train_x, unlabelled, train_y, archi, epoch, alp
 	nn = dbnunfoldtonn(dbn, size(train_y,2));
 	nn.activation_function = 'sigm';
 	[batchsize nb] = learning_compute_batchsize(train_y);
-	opts.numepochs =  50;
+	opts.numepochs =  5;
 	opts.batchsize = batchsize;
 	nn = nntrain(nn, train_x, train_y, opts);
 

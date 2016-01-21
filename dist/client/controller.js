@@ -59,7 +59,7 @@ function Controller(parent){
   });
 
   socket.on('data', function(msg){
-    $( "#dialog-output" ).html(msg);
+//    $( "#dialog-output" ).html(msg);
 //    console.log(msg);
     try {
       json = JSON.parse(msg.toString());

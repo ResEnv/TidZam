@@ -4,7 +4,10 @@ printf("Starting");
 
 folder_in = 'data/database/';
 file_out  = 'data/dataset/default.dat';
+folder_processed = 'data/processed_records/'
 DEBUG     = 0;
+shape_right = 0;
+shape_left = 0;
 
 arg_list = argv ();
 for i = 1:nargin
@@ -30,6 +33,7 @@ for i = 1:nargin
   if strncmp(arg_list{i}, "--shape-right=",14)
     shape_right = arg_list{i}(10:end);
   end
+
   if strncmp(arg_list{i}, "--filter-low=",13)
      shape_left = str2num(arg_list{i}(14:end));
   end
@@ -39,11 +43,22 @@ for i = 1:nargin
   end
 end
 
+% TODO
+% If already exist add it (move wav files when processed)
+% if --folder-in= is not defined => Rebuild the dataset
+% if --delete=NUM delete the corresponding line
+
+try
+  load(file_out)
+catch
+  database          = struct ();
+  database.yes      = [];
+  database.no       = [];
+  size_data         = [];
+end
+
 printf ("\nFolder in:\t%s\nFile out:\t%s\nClasse:\t\t%s\n\n",folder_in, file_out, classe);
 
-cl1       = [];
-cl2       = [];
-size_data = [];
 dirlist = dir(strcat(folder_in,'*'));
 for j = 1:length(dirlist)
   if ! size(findstr(dirlist(j).name(1:end), classe),1)
@@ -67,21 +82,22 @@ for j = 1:length(dirlist)
   X = reshape(S, 1, size(S,1)*size(S,2));
 
   if strcmp(cl,'+')
-        cl1 = [cl1 ; X];
+        database.yes = [database.yes ; X];
   else
-        cl2 = [cl2 ; X];
+        database.no = [database.no ; X];
   end
+
+  unix (sprintf('mv "%s" "%s"', strcat(folder_in, dirlist(j).name(1:end)), folder_processed));
 end
 
-database = struct ();
 database = setfield (database, "name", classe);
-database = setfield (database, "yes", cl1);
-database = setfield (database, "no", cl2);
+database = setfield (database, "yes", database.yes);
+database = setfield (database, "no", database.no);
 database = setfield (database, "size", size_data);
 database = setfield (database, "shape_left", shape_left);
 database = setfield (database, "shape_right", shape_right);
 
-printf("\nClasse +: %d samples\nClasse -: %d samples\nData size: %dx%d\nshape_left:%d\nshape_right:%d", size(cl1)(1), size(cl2)(1), size_data, database.shape_left,database.shape_right);
+printf("\nClasse +: %d samples\nClasse -: %d samples\nData size: %dx%d\nshape_left:%d\nshape_right:%d", size(database.yes)(1), size(database.no)(1), size_data, database.shape_left,database.shape_right);
 
 printf("\nSaving ...");
-save(file_out, '-binary', 'database');
+save('-binary', file_out, 'database');

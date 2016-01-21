@@ -37,27 +37,33 @@ dataset.name =  file_in(1:findstr(file_in, '.dat')-1);
 % LOADING DATABASES
 dirlist = dir(strcat(folder_in,'*'));
 others = [];
-printf("\nLoading databases (%s):\n",strcat(folder_in,'*'));
+printf("\nLoading dataset (%s):\n",strcat(folder_in,'*'));
 
-for j = 1:length(dirlist)
-  load (sprintf("%s%s",folder_in, dirlist(j).name(1:end)));
-  if strcmp(database.name, dataset.name)
-    printf('=> %s\n', database.name);
-    current = database;
-  end
+load(sprintf("%s%s.dat",folder_in,dataset.name ))
+
+if exist('database') == 0
+    printf("loading failed\n");
 end
 
+printf('=> %s\n', database.name);
+current = database;
+
+
 dataset.database = {};
+dataset.database.name         = database.name;
+dataset.database.used         = [];
 dataset.database.size         = current.size;
 dataset.database.yes_size     = size(current.yes,1);
 dataset.database.no_size      = size(current.no,1);
 dataset.database.shape_left   = current.shape_left;
 dataset.database.shape_right  = current.shape_right;
 
-dataset.database.used = [];
 for j = 1:length(dirlist)
   load (sprintf("%s%s",folder_in, dirlist(j).name(1:end)));
   if strcmp(database.name, dataset.name) == 0
+  current.size
+  database.size
+  database.name
     if (current.size == database.size)
       printf('* %s (%d)\n', database.name, size(database.yes,1));
       others = [others; database.yes];
@@ -108,7 +114,8 @@ dataset.train_x = X([1:size(X,1)*p], :);
 dataset.train_y = Y([1:size(X,1)*p], :);
 dataset.test_x = X([size(X,1)*p+1:end], :);
 dataset.test_y  = Y([size(X,1)*p+1:end], :);
-printf("Train Dataset: %d samples\n Test Dataset: %d samples\nSize:%dx%d,\nshape_left:%d\nshape_right:%d\n", size(dataset.train_x,1), size(dataset.test_x,1), dataset.database.size,dataset.database.shape_left,dataset.database.shape_right);
+
+printf("Train Dataset: %d samples\n Test Dataset: %d samples\nSize:%dx%d\n", size(dataset.train_x,1), size(dataset.test_x,1), dataset.database.size);
 
 printf("\nSaving ...");
-save (file_out, "dataset");
+save ("-binary", file_out,  "dataset");

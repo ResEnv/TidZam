@@ -125,7 +125,7 @@ global SIZE_WINDOW;
 
 do
 	for chan=1:2
-	try
+%	try
 		[X S f t, CHANNEL] = sample_spectogram_sound(STREAM, chan);
 		res = {};
 
@@ -144,10 +144,7 @@ do
 		for i=1:size(nns,2)
 			nns{i}{2}.testing 	= 1;
 
-			T = S([nns{i}{2}.database.shape_left+1:end],:);
-			T = T([1:end-nns{i}{2}.database.shape_right],:);
-			T = reshape(T, 1, size(T,1)*size(T,2));
-
+			[T window_size] =  reshape_sample(S, 598, 92, nns{i}{2}.database.shape_left, nns{i}{2}.database.shape_right);
 			nns{i}{2} 		= nnff(nns{i}{2}, T, zeros(size(T,1), nns{i}{2}.size(end)));
 			nns{i}{2}.testing 	= 0;
 
@@ -168,9 +165,9 @@ do
 		j=[];
 		print_res(res, chan);
 
-	catch
-		printf('{"result": "No Input"}\n');
-	end_try_catch
+%	catch err
+%		printf('{"Error":"'+err+'" }\n');
+%	end_try_catch
 
 	fflush(stdout);
 	fflush(stderr);

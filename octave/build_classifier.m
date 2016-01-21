@@ -9,6 +9,10 @@ arg_list = argv ();
 SAE = 0;
 DBN = 0;
 CNN = 0;
+
+shape_right = 0;
+shape_left  = 0;
+
 for i = 1:nargin
 	if strncmp(arg_list{i}, "--train=",8)
 		TRAIN_PATH = arg_list{i}(9:end); end
@@ -25,6 +29,14 @@ for i = 1:nargin
 	if strncmp(arg_list{i}, "--cnn",5)
 		CNN = 1; end
 
+	if strncmp(arg_list{i}, "--shape-left=",13)
+	  shape_left = str2num(arg_list{i}(14:end))
+	end
+
+	if strncmp(arg_list{i}, "--shape-right=",14)
+	  shape_right = str2num(arg_list{i}(15:end))
+	end
+
 end
 
 % =================================== DATA  ===================================
@@ -37,23 +49,30 @@ train_x = dataset.train_x;
 train_y = dataset.train_y;
 test_x  = dataset.test_x;
 test_y  = dataset.test_y;
-dataset.database.size
 
-[batchsize nb] = learning_compute_batchsize(train_y)
-[count_by_class] = dataset_example_count_by_class (train_y)
-train_x = train_x([1: batchsize*nb ],:);
-train_y = train_y([1: batchsize*nb ],:);
+printf("\nTraining set prepraration:\n");
+[batchsize nb] 				= learning_compute_batchsize(train_y)
+[count_by_class] 			= dataset_example_count_by_class (train_y)
 
-X = [train_x];
-labels
+[train_x] = train_x([1: batchsize*nb ],:);
+[train_y]	= train_y([1: batchsize*nb ],:);
+[train_x] = reshape_samples(train_x, 598, 92, shape_left,shape_right);
+[test_x window_size] 	= reshape_samples(test_x, 598, 92, shape_left,shape_right);
+printf(" done.\n");
 
+
+
+
+
+
+X = train_x;
 % ================================== LEARNING ==================================
 if SAE
-	[nn sae] = learning_sae(train_x, X, train_y, [64 8], 200, 0.1, 0.5); % 64 8
+	[nn sae] = learning_sae(train_x, train_x, train_y, [64 8], 200, 0.1, 0.5); % 64 8
 	v = sae.ae{1}.W{1}(:,2:end)';
 	figure;
 
-	visualize(v, [min(min(v)) max(max(v))], dataset.database.size(1,1), dataset.database.size(1,2));
+	visualize(v, [min(min(v)) max(max(v))], shape_left, shape_right);
 	for i=2:numel(sae.ae)
 		figure
 		visualize(sae.ae{i}.W{1}(:,2:end)');
@@ -65,7 +84,7 @@ else if DBN
 	v = dbn.rbm{1}.W';
 	figure;
 
-	visualize(v, [min(min(v)) max(max(v))], dataset.database.size(1,1), dataset.database.size(1,2));
+	visualize(v, [min(min(v)) max(max(v))],window_size(1,1), window_size(1,2));
 	for i=2:numel(dbn.rbm)
 		figure
 		visualize(dbn.rbm{i}.W');
@@ -105,7 +124,11 @@ printf("\nEvaluation on testing dataset \n");
 nn =  nn_evaluate (nn, test_x, test_y, labels);
 
 nn.database = dataset.database;
+nn.database.size = window_size;
+nn.database.shape_left = shape_left;
+nn.database.shape_right = shape_right;
 nn.labels   = labels;
+nn.date			= now ();
 
 printf("\nSize:%dx%d\nshape_left:%d\nshape_right:%d\n", nn.database.size, nn.database.shape_left,nn.database.shape_right);
 

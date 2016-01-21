@@ -66,7 +66,7 @@ class Classifier
 
     classifiers += ']'
     classifiers = classifiers.replace(/(?:\r\n|\r|\n)/g, 'gg')
-    console.log classifiers
+    # console.log classifiers
 
     ctr = spawn('octave',["./octave/predict.m","--auto", "--stream="+me.file, me.show, "--classifiers-path=" +me.classifiersPath, "--classifiers=" + classifiers]);
 
@@ -77,7 +77,7 @@ class Classifier
         console.log data.toString()
 
     ctr.stdout.on 'data', (data) ->
-#      console.log data.toString()
+      #console.log data.toString()
       if data.toString().indexOf('Starting') != -1
         ready = true
       if !ready then return

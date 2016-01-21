@@ -26,7 +26,7 @@ class Server
       catch err
         console.log "Error during reading of" + me.fft_file
 
-    app.get "/database-fft", (req,res) ->
+    app.get "/record-fft", (req,res) ->
       try
         res.sendFile me.fft__databasefile, { root: __dirname + '/../' }
       catch err

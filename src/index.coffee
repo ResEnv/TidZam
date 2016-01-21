@@ -73,52 +73,53 @@ class controller
 					else if code == 1  then	socket.emit 'sys', JSON.stringify {sys:{training:{build:sys.training.build, status:'running',data:data}}}
 					else socket.emit 'sys', JSON.stringify {sys:{training:{build:sys.training.build, status:'failed',out:data}}}
 
+				if sys.training?.do == 'next' then me.dataset.getNextTraining sys.training.show, sys.training.filter_low, sys.training.filter_high, (code,data) ->
+					socket.emit 'sys', JSON.stringify {sys:{training:{show:data}}}
+
+				if sys.training?.do == 'prev' then me.dataset.getPrevTraining sys.training.show, sys.training.filter_low, sys.training.filter_high, (code,data) ->
+					socket.emit 'sys', JSON.stringify {sys:{training:{show:data}}}
+
+
 				# DATASET EVENTS
-				if sys.datasets?.list? then me.dataset.getDatasets (code,data) ->
-					if !code then me.socket.emit 'sys', JSON.stringify {sys:{datasets:{list: data }}}
+				if sys.dataset?.list? then me.dataset.getDatasets (code,data) ->
+					if !code then me.socket.emit 'sys', JSON.stringify {sys:{dataset:{list: data }}}
 					else console.log "WARNING Error controller: " + data
 
-				if sys.datasets?.build then 	me.dataset.buildDataset sys.datasets?.build,  sys.datasets.filter_low, sys.datasets.filter_high, (code,data) ->
-					if 			code == 0	 then	socket.emit 'sys', JSON.stringify {sys:{datasets:{build:sys.datasets.build, status:'done',data:data}}}
-					else if code == 1  then	socket.emit 'sys', JSON.stringify {sys:{datasets:{build:sys.datasets.build, status:'running',data:data}}}
-					else socket.emit 'sys', JSON.stringify {sys:{datasets:{build:sys.datasets.build, status:'failed',out:data}}}
+				if sys.dataset?.build then 	me.dataset.buildDataset sys.dataset?.build, (code,data) ->
+					if 			code == 0	 then	socket.emit 'sys', JSON.stringify {sys:{dataset:{build:sys.dataset.build, status:'done',data:data}}}
+					else if code == 1  then	socket.emit 'sys', JSON.stringify {sys:{dataset:{build:sys.dataset.build, status:'running',data:data}}}
+					else socket.emit 'sys', JSON.stringify {sys:{dataset:{build:sys.dataset.build, status:'failed',out:data}}}
 
+				if sys.dataset?.delete then 	me.dataset.deleteSample sys.records?.delete, (code,data) ->
+					if !code then	me.dataset.getPrevSample sys.dataset?.delete, (code,data) ->
+							socket.emit 'sys', JSON.stringify {sys:{dataset:{show:data}}}
+					else console.log "WARNING Delete sample: " + sys.dataset?.delete + " failed. \n("+data+")"
 
+				if sys.dataset?.do == 'next' then me.dataset.getNextSample sys.dataset.show, sys.dataset.filter_low, sys.dataset.filter_high, (code,data) ->
+					socket.emit 'sys', JSON.stringify {sys:{dataset:{show:data}}}
 
-
-				if sys.datasets?.do == 'next' then me.dataset.getNextSample sys.datasets.show, (code,data) ->
-					socket.emit 'sys', JSON.stringify {sys:{datasets:{show:data}}}
-
-				if sys.datasets?.do == 'prev' then me.dataset.getPrevSample sys.datasets.show, (code,data) ->
-					socket.emit 'sys', JSON.stringify {sys:{datasets:{show:data}}}
-
-
-
-
-
-
+				if sys.dataset?.do == 'prev' then me.dataset.getPrevSample sys.dataset.show, sys.dataset.filter_low, sys.dataset.filter_high, (code,data) ->
+					socket.emit 'sys', JSON.stringify {sys:{dataset:{show:data}}}
 
 				# DATABASE RECORD EVENTS
-				if sys.databases?.list?	then me.dataset.getDatabases (code, data) ->
-					if !code then me.socket.emit 'sys', JSON.stringify {sys:{databases:{list: data }}}
+				if sys.records?.list?	then me.dataset.getDatabases (code, data) ->
+					if !code then me.socket.emit 'sys', JSON.stringify {sys:{records:{list: data }}}
 					else console.log "WARNING Error controller: " + data
 
-				if sys.databases?.build
+				if sys.records?.build
+					me.dataset.buildDatabase sys.records?.build, (code,data) ->
+						console.log data
+						if 			code == 0	 then	socket.emit 'sys', JSON.stringify {sys:{records:{build:sys.records.build, status:'done',data:data}}}
+						else if code == 1  then	socket.emit 'sys', JSON.stringify {sys:{records:{build:sys.records.build, status:'running',data:data}}}
+						else socket.emit 'sys', JSON.stringify {sys:{records:{build:sys.records.build, status:'failed',out:data}}}
 
-					me.dataset.buildDatabase sys.databases?.build,  sys.databases.filter_low, sys.databases.filter_high, (code,data) ->
-						if 			code == 0	 then	socket.emit 'sys', JSON.stringify {sys:{databases:{build:sys.databases.build, status:'done',data:data}}}
-						else if code == 1  then	socket.emit 'sys', JSON.stringify {sys:{databases:{build:sys.databases.build, status:'running',data:data}}}
-						else socket.emit 'sys', JSON.stringify {sys:{databases:{build:sys.databases.build, status:'failed',out:data}}}
+				if sys.records?.delete then 	me.dataset.deleteRecord sys.records?.delete, (code,data) ->
+					if code then	console.log "WARNING Delete sample: " + sys.records?.delete + " failed. \n("+data+")"
 
-				if sys.databases?.delete then 	me.dataset.deleteSample sys.databases?.delete, (code,data) ->
-					if !code then	me.dataset.getPrevSample sys.databases?.delete, (code,data) ->
-							socket.emit 'sys', JSON.stringify {sys:{databases:{show:data}}}
-					else console.log "WARNING Delete sample: " + sys.databases?.delete + " failed. \n("+data+")"
+				if sys.records?.do == 'next' then me.dataset.getNextRecord sys.records.show, sys.records.filter_low, sys.records.filter_high, (code,data) ->
+					socket.emit 'sys', JSON.stringify {sys:{records:{show:data}}}
 
-				if sys.databases?.do == 'next' then me.dataset.getNextRecord sys.databases.show, sys.databases.filter_low, sys.databases.filter_high, (code,data) ->
-					socket.emit 'sys', JSON.stringify {sys:{databases:{show:data}}}
-
-				if sys.databases?.do == 'prev' then me.dataset.getPrevRecord sys.databases.show, sys.databases.filter_low, sys.databases.filter_high, (code,data) ->
-					socket.emit 'sys', JSON.stringify {sys:{databases:{show:data}}}
+				if sys.records?.do == 'prev' then me.dataset.getPrevRecord sys.records.show, sys.records.filter_low, sys.records.filter_high, (code,data) ->
+					socket.emit 'sys', JSON.stringify {sys:{records:{show:data}}}
 
 new controller()
