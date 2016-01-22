@@ -45,7 +45,7 @@ class Classifier
     res = []
     fs.readdir me.classifiersPath , (err, items) ->
       for nn in items
-        if nn.indexOf 'nn' > 0
+        if nn.indexOf('nn') > 0
           res.push(nn)
       f(0, res)
 

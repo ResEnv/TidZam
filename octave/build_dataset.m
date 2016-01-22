@@ -4,7 +4,7 @@ printf("Starting\n");
 
 folder_in = 'data/dataset/';
 file_out  = 'data/training/default.dat';
-size_min  = 1000;
+size_min  = 2000;
 DEBUG     = 0;
 p = 0.7
 
@@ -61,9 +61,6 @@ dataset.database.shape_right  = current.shape_right;
 for j = 1:length(dirlist)
   load (sprintf("%s%s",folder_in, dirlist(j).name(1:end)));
   if strcmp(database.name, dataset.name) == 0
-  current.size
-  database.size
-  database.name
     if (current.size == database.size)
       printf('* %s (%d)\n', database.name, size(database.yes,1));
       others = [others; database.yes];
@@ -81,6 +78,17 @@ X = [X; current.no];
 Y = [Y; zeros(size(current.no,1),1) ones(size(current.no,1),1)];
 printf("Available negative: %d samples\n", size(current.no,1));
 
+printf("\nDataset Randomization: ");
+id1 = ceil(rand(size(X,1),1) * size(X,1));
+id2 = ceil(rand(size(X,1),1) * size(X,1));
+tx  = X(id1,:);
+ty  = Y(id1,:);
+X(id1,:) = X(id2,:);
+Y(id1,:) = Y(id2,:);
+X(id2,:) = tx;
+Y(id2,:) = ty;
+printf("done.\n")
+
 if size(X,1) == 0
   printf("No sample found.\n");
   exit(0);
@@ -91,6 +99,9 @@ while (size(X,1) < size_min / 2)
   X = [X; current.yes];
   Y = [Y; [ones(size(current.yes,1),1) zeros(size(current.yes,1),1)]];
 endwhile
+X = X([1:ceil(size_min / 2)],:);
+Y = Y([1:ceil(size_min / 2)],:);
+
 printf("* %d samples generated from %s.\n", size(X,1), dataset.name);
 nop = ceil(rand( size_min - size(X,1), 1) * size(others,1));
 nop = others(nop,:);
@@ -110,10 +121,10 @@ Y(id2,:) = ty;
 printf("done.\n")
 
 printf("\nEvaluation Dataset Extraction:\n");
-dataset.train_x = X([1:size(X,1)*p], :);
-dataset.train_y = Y([1:size(X,1)*p], :);
-dataset.test_x = X([size(X,1)*p+1:end], :);
-dataset.test_y  = Y([size(X,1)*p+1:end], :);
+dataset.train_x = X([1:ceil(size(X,1)*p)], :);
+dataset.train_y = Y([1:ceil(size(X,1)*p)], :);
+dataset.test_x = X([ceil(size(X,1)*p+1):end], :);
+dataset.test_y  = Y([ceil(size(X,1)*p+1):end], :);
 
 printf("Train Dataset: %d samples\n Test Dataset: %d samples\nSize:%dx%d\n", size(dataset.train_x,1), size(dataset.test_x,1), dataset.database.size);
 

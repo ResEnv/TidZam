@@ -28,12 +28,16 @@ class Dataset
         if err then  f(-1, "Error deletion of "+ file)
         else  f(0, "Deletion of "+ file + " done.")
 
-  buildClassifier: (name, filter_low = 1000, filter_high=10000, f) ->
+  buildClassifier: (name, filter_low = 1000, filter_high=10000, structure="10-10", epoch=200, learning_rate=0.01, f) ->
+    console.log structure
     dst = me.classifierPath + 'classifier-' + name.split('.')[0] + '.nn';
     ctr = spawn 'octave', ['octave/build_classifier.m',
      '--train='+me.trainingsetPath + name,
       '--classifier-out='+dst,
       '--dbn',
+      '--structure=' + structure,
+      '--epoch='+epoch,
+      '--learning_rate='+learning_rate,
       '--shape-left=' + filter_low,
       '--shape-right=' + filter_high]
     ready = false
@@ -233,7 +237,7 @@ class Dataset
       '--filter-low=' + filter_low,
       '--filter-high=' + filter_high]
     ctr.stderr.on 'data', (data)  ->
-#      console.log data.toString()
+#     console.log data.toString()
       f?(-1, data)
     ctr.stdout.on 'data', (data)  ->
 #      console.log data.toString()

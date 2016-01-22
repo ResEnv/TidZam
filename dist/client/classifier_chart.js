@@ -6,15 +6,23 @@ function ClassifierChart(parent, names){
   parent.innerHTML +=
   '<div id="'+  this.dialog_chart_name +'" title="Neural Knowledge Units"></div>'+
   '<div id="dialog-info" title="Details" ></div>' +
-
+  '<div id="dialog-info-img" title="Hidden Layers" ></div>' +
   '<div id="dialog-database-new" title="Record database name">'+
   '<input type="text" id="dialog-database-new-input">'+
   '<input type="button" id="dialog-database-new-button" value="Create"></div>';
 
   var dialog_info = this.dialog_info =  $( "#dialog-info" ).dialog({
     autoOpen: false,
+    width:600,
     modal: false,
   });
+
+
+  var dialog_info_img = this.dialog_info =  $( "#dialog-info-img" ).dialog({
+    autoOpen: false,
+    width:600,
+    modal: false,
+    });
 
   var dialog_info_database_new = this.dialog_info_database_new =  $( "#dialog-database-new" ).dialog({
     autoOpen: false,
@@ -29,10 +37,24 @@ function ClassifierChart(parent, names){
     $ ('#dialog-database-new').dialog('close');
   });
 
+  function UrlExists(url)
+  {
+      var http = new XMLHttpRequest();
+      http.open('HEAD', url, false);
+      http.send();
+      return http.status!=404;
+  }
+
   this.dialog_info.update = function(conf){
-    var print = "<table style=\"float:left;\" class=\"table_info\"><tr style=\"font-weight:bold;\"><td>Classifiers</td><td>Under Estimation</td><td>Over Estimation</td></tr>";
+    var print = "<table style=\"float:left;\" class=\"table_info\">"+
+      "<tr style=\"font-weight:bold;text-align:center;\"><td>Classifiers</td><td>Under Estimation</td><td>Over Estimation</td> <td>Structure</td> <td>RoI</td> <td>Date</td></tr>";
     for (i=0; i < conf.classifiers.length; i++)
-    print += "<tr><td>"+conf.classifiers[i].name + "</td><td>" + conf.classifiers[i].errors[0] + "</td><td>" + conf.classifiers[i].errors[1] + "</td></tr>";
+    print += "<tr><td><a href='#?classifier="+conf.classifiers[i].name+"'  class='link_classifier_img'>"+conf.classifiers[i].name + "</a></td>"+
+      "<td>" + conf.classifiers[i].errors[0] + "</td>"+
+      "<td>" + conf.classifiers[i].errors[1] + "</td>"+
+      "<td>" + conf.classifiers[i].structure + "</td>"+
+      "<td>" + conf.classifiers[i].roi + "</td>"+
+      "<td>"+conf.classifiers[i].date +"</td></tr>";
     print += "</table>";
     print += "<table class=\"table_info\">";
     print += "<tr><td style=\"font-weight:bold;\">Analysis frequency: </td><td> "+conf.frequency*1000+" ms</td></tr>";
@@ -40,7 +62,20 @@ function ClassifierChart(parent, names){
     print += "<tr><td style=\"font-weight:bold;\">Filter High Band: </td><td> "+ (conf.filter.high / 1000) +" KHz</td></tr>";
     print += "</table>";
     $( "#dialog-info" ).html(print);
-  }
+
+    $( '.link_classifier_img' ).on('click',  function(){
+      var classifier = this.href.substr(this.href.indexOf('classifier=')+11);
+      var html = '';
+      for(var i=1; i < 10; i++)
+        if (UrlExists('/data/classifiers/classifier-'+classifier+'-L'+i+'.png'))
+          html += '<img src="/data/classifiers/classifier-' + classifier + '-L' + i + '.png" width="600">';
+      $( '#dialog-info-img ').html(html).dialog('open');
+    });
+
+  };
+
+
+//.OnClick='$(\"#dialog-info-img\").data(\"classifier\",\""+conf.classifiers[i].name+"\").dialog(\"open\");'
 
   var dialog = this.dialog =   $( '#dialog-neural-outputs'  ).dialog({
     autoOpen: false,

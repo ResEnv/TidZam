@@ -4,7 +4,7 @@ printf("Starting");
 
 folder_in = 'data/database/';
 file_out  = 'data/dataset/default.dat';
-folder_processed = 'data/processed_records/'
+folder_processed = 'data/processed_records/';
 DEBUG     = 0;
 shape_right = 0;
 shape_left = 0;

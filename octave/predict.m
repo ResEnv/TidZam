@@ -66,14 +66,39 @@ function print_conf(nns, TIME)
 		printf('\n{\"classifiers\":[');
 
 	else
-		printf("\n{\"classifiers\":[{\"name\":\"%s\", \"errors\":[%f,%f]}", nns{1}{1}, nns{1}{2}.err(1), nns{1}{2}.err(2));
+
+	  if isfield (nns{1}{2}, "date")
+		   date = nns{1}{2}.date;
+		else date ='unknown';
+		end
+		printf("\n{\"classifiers\":[{\"name\":\"%s\", \"errors\":[%f,%f],\"structure\":\"%s\",\"roi\":\"%d-%d Hz\",\"date\":\"%s\"}",
+			nns{1}{1},
+			nns{1}{2}.err(1),
+			nns{1}{2}.err(2),
+			mat2str(nns{1}{2}.size),
+			ceil(nns{1}{2}.database.shape_left/0.042+FILTER_LOW),
+			ceil(FILTER_HIGH-(nns{1}{2}.database.shape_right/0.042)),
+			date);
 		for i=2:numel(nns)
-			printf(",{\"name\":\"%s\", \"errors\":[%f,%f]}",nns{i}{1},nns{i}{2}.err(1),nns{i}{2}.err(2));
+		  if isfield (nns{i}{2}, "date")
+			   date = nns{i}{2}.date;
+			else date ='unknown';
+			end
+			printf(",{\"name\":\"%s\", \"errors\":[%f,%f],\"structure\":\"%s\",\"roi\":\"%d-%d Hz\",\"date\":\"%s\"}",
+				nns{i}{1},
+				nns{i}{2}.err(1),
+				nns{i}{2}.err(2),
+				mat2str(nns{i}{2}.size),
+				ceil(nns{i}{2}.database.shape_left/0.042+FILTER_LOW),
+				ceil(FILTER_HIGH-(nns{i}{2}.database.shape_right/0.042)), date);
 		end
 	end
 
-	printf("], \"frequency\":%f, \"filter\":{\"high\":%d,\"low\":%d}}\n", TIME, FILTER_HIGH, FILTER_LOW);
+	printf("], \"frequency\":%f, \"filter\":{\"high\":%d,\"low\":%d}}\n", TIME, FILTER_HIGH, FILTER_LOW );
 end
+
+
+
 
 function print_res(res, chan)
 	fflush(stdout);
@@ -125,18 +150,18 @@ global SIZE_WINDOW;
 
 do
 	for chan=1:2
-%	try
+	try
 		[X S f t, CHANNEL] = sample_spectogram_sound(STREAM, chan);
 		res = {};
 
 		v=X';
-%		if SHOW == 1
-%			visualize(v, [min(min(v)) max(max(v))], SIZE_WINDOW(1,1),SIZE_WINDOW(1,2));
-%			title(chan);
-%		else
-%			a = visualize(v, [min(min(v)) max(max(v))], SIZE_WINDOW(1,1),SIZE_WINDOW(1,2));
-%			imwrite (a, 'tmp/fft.png')
-%		end
+		if SHOW == 1
+			visualize(v, [min(min(v)) max(max(v))], 598, 92);
+			title(chan);
+		else
+			a = visualize(v, [min(min(v)) max(max(v))], 598, 92);
+			imwrite (a, 'tmp/fft.png')
+		end
 
 		if size(X,2) < 100
 			continue;
@@ -165,9 +190,9 @@ do
 		j=[];
 		print_res(res, chan);
 
-%	catch err
-%		printf('{"Error":"'+err+'" }\n');
-%	end_try_catch
+	catch err
+		printf('{"Error":"%s" }\n', err);
+	end_try_catch
 
 	fflush(stdout);
 	fflush(stderr);

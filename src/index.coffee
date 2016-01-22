@@ -64,7 +64,7 @@ class controller
 					if !code then me.socket.emit 'sys', JSON.stringify {sys:{training:{list: data }}}
 					else console.log "WARNING Error controller: " + data
 
-				if sys.training?.build then 	me.dataset.buildClassifier sys.training.build,  sys.training.filter_low, sys.training.filter_high, (code,data) ->
+				if sys.training?.build then 	me.dataset.buildClassifier sys.training.build,  sys.training.filter_low, sys.training.filter_high,  sys.training.structure, sys.training.epoch, sys.training.learning_rate, (code,data) ->
 					if 			code == 0
 						socket.emit 'sys', JSON.stringify {sys:{training:{build:sys.training.build, status:'done',data:data}}}
 						me.classifier.getAvailableClassifiers (code,data) ->

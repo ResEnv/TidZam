@@ -10,6 +10,9 @@ SAE = 0;
 DBN = 0;
 CNN = 0;
 
+structure   = '[10]';
+epoch 			= 5;
+learning_rate = 0.01;
 shape_right = 0;
 shape_left  = 0;
 
@@ -29,9 +32,21 @@ for i = 1:nargin
 	if strncmp(arg_list{i}, "--cnn",5)
 		CNN = 1; end
 
-	if strncmp(arg_list{i}, "--shape-left=",13)
-	  shape_left = str2num(arg_list{i}(14:end))
-	end
+		if strncmp(arg_list{i}, "--shape-left=",13)
+		  shape_left = str2num(arg_list{i}(14:end))
+		end
+
+		if strncmp(arg_list{i}, "--structure=",12)
+		  structure = eval(sprintf('[%s]',arg_list{i}(13:end)))
+		end
+
+		if strncmp(arg_list{i}, "--epoch=",8)
+		  epoch = str2num(arg_list{i}(9:end))
+		end
+
+		if strncmp(arg_list{i}, "--learning_rate=",16)
+		  learning_rate = str2double(arg_list{i}(17:end))
+		end
 
 	if strncmp(arg_list{i}, "--shape-right=",14)
 	  shape_right = str2num(arg_list{i}(15:end))
@@ -63,9 +78,11 @@ printf(" done.\n");
 
 
 
+id1 = find(sum(abs(train_y.-[1 0]),2) == 0 );
+X = train_x(id1,:);
+[batchsize_pre nb_pre] = learning_compute_batchsize(X)
+X = X([1:batchsize_pre * nb_pre],:);
 
-
-X = train_x;
 % ================================== LEARNING ==================================
 if SAE
 	[nn sae] = learning_sae(train_x, train_x, train_y, [64 8], 200, 0.1, 0.5); % 64 8
@@ -79,15 +96,18 @@ if SAE
 	end
 
 else if DBN
-	[nn dbn] = learning_dbn(train_x, X, train_y, [64 8], 5, 0.00001, 0.5);
-% [nn dbn] = learning_dbn(train_x, X, train_y, [16 9], 100, 0.01, 0.5);
-	v = dbn.rbm{1}.W';
-	figure;
 
-	visualize(v, [min(min(v)) max(max(v))],window_size(1,1), window_size(1,2));
+	[nn dbn] = learning_dbn(train_x, X, train_y, structure, epoch, learning_rate, 0.5);
+
+	v = dbn.rbm{1}.W';
+	a = visualize(v, [min(min(v)) max(max(v))],window_size(1,1), window_size(1,2));
+	pos = findstr(out,'.nn');
+	out_img = out([1:pos-1]);
+	imwrite (a, sprintf('%s-L1.png', out_img));
+
 	for i=2:numel(dbn.rbm)
-		figure
-		visualize(dbn.rbm{i}.W');
+		a = visualize(dbn.rbm{i}.W');
+		imwrite (a, sprintf('%s-L%d.png', out_img, i));
 	end
 
 else if CNN
@@ -128,7 +148,9 @@ nn.database.size = window_size;
 nn.database.shape_left = shape_left;
 nn.database.shape_right = shape_right;
 nn.labels   = labels;
-nn.date			= now ();
+nn.date			= strftime ("%X %D", localtime (time ()));
+nn.epoch 		= epoch;
+nn.learning_rate = learning_rate;
 
 printf("\nSize:%dx%d\nshape_left:%d\nshape_right:%d\n", nn.database.size, nn.database.shape_left,nn.database.shape_right);
 
