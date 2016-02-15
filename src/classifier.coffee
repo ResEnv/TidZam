@@ -69,7 +69,7 @@ class Classifier
     classifiers = classifiers.replace(/(?:\r\n|\r|\n)/g, 'gg')
     # console.log classifiers
 
-    ctr = spawn('octave',["./octave/predict.m","--auto", "--time=", eval(0.5*(1-me.overlap)), "--stream="+me.file, me.show, "--classifiers-path=" +me.classifiersPath, "--classifiers=" + classifiers]);
+    ctr = spawn('octave',["./octave/predict.m","--auto", "--time="+0.5*(1-me.overlap), "--stream="+me.file, me.show, "--classifiers-path=" +me.classifiersPath, "--classifiers=" + classifiers]);
 
     msg = new String()
     ready = false
@@ -78,7 +78,7 @@ class Classifier
         console.log data.toString()
 
     ctr.stdout.on 'data', (data) ->
-      #console.log data.toString()
+      console.log data.toString()
       if data.toString().indexOf('Starting') != -1
         ready = true
       if !ready then return

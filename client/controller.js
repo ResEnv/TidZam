@@ -84,7 +84,7 @@ function Controller(parent){
       charts.process(json);
 
       //if (json.results)
-        player.process(json);
+      player.process(json);
       }
     catch(err){
        console.log("Error on data: " + err + " MSG received:  "+ msg.toString());
