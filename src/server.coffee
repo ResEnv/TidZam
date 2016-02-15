@@ -35,8 +35,8 @@ class Server
     app.get "/data/*", (req,res) ->
         res.sendfile 'data/' + req.params[0], { root: __dirname + '/../' }
 
-    app.get /^(.+)$/, (req,res) ->
-        res.sendfile  __dirname + req.params[0]
+    app.get "/client/*", (req,res) ->
+        res.sendfile  req.params[0], { root: __dirname + '/../client/' }
 
   setSampleFile: (file) ->
     @sample_file = file
