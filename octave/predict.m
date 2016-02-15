@@ -149,7 +149,7 @@ TIME = TIME / CHANNEL
 global SIZE_WINDOW;
 
 do
-	for chan=1:2
+	for chan=1:CHANNEL
 	try
 		[X S f t, CHANNEL] = sample_spectogram_sound(STREAM, chan);
 		res = {};
@@ -191,7 +191,7 @@ do
 		print_res(res, chan);
 
 	catch err
-		printf('{"Error"}');
+		printf('{"Error": "%s"}\n', err.message);
 	end_try_catch
 
 	fflush(stdout);

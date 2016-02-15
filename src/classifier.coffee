@@ -10,6 +10,7 @@ class Classifier
     me.file = file
     me.show = show
     me.conf = {}
+    me.overlap = 0.5
     me.clb  = clb
     me.classifiersPath = 'data/classifiers/'
     me.classifiers = []
@@ -68,7 +69,7 @@ class Classifier
     classifiers = classifiers.replace(/(?:\r\n|\r|\n)/g, 'gg')
     # console.log classifiers
 
-    ctr = spawn('octave',["./octave/predict.m","--auto", "--stream="+me.file, me.show, "--classifiers-path=" +me.classifiersPath, "--classifiers=" + classifiers]);
+    ctr = spawn('octave',["./octave/predict.m","--auto", "--time=", eval(0.5*(1-me.overlap)), "--stream="+me.file, me.show, "--classifiers-path=" +me.classifiersPath, "--classifiers=" + classifiers]);
 
     msg = new String()
     ready = false

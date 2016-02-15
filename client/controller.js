@@ -9,7 +9,20 @@ function Controller(parent){
   var charts = this.charts = new ClassifierChart(parent);
 
   // WINDOWS DECLARATION
-  this.parent.innerHTML += '<div id="dialog-console" title="JSON WebSocket" ></div>';
+  this.parent.innerHTML += '<div id="dialog-console" title="JSON WebSocket" ></div>'+
+                           '<div id="dialog-console-data" title="JSON WebSocket data" ></div>';
+
+  $( "#dialog-console-data" ).dialog({
+    autoOpen: false,
+    width: 272,
+    modal: false,
+  });
+  $( "#dialog-console-data" ).html(
+    '<div id="dialog-data-output" style="height:230px;"></div>'
+  );
+  $( "#dialog-console-data" ).attr('style','font-size:12px;');
+
+
 
   $( "#dialog-console" ).dialog({
     autoOpen: false,
@@ -44,6 +57,10 @@ function Controller(parent){
     $( "#dialog-console" ).dialog("open");
   };
 
+  this.openDataConsole = function(){
+    $( "#dialog-console-data" ).dialog("open");
+  };
+
 
   // SOCKET. IO CONNECTOR
   socket.on('sys', function(msg){
@@ -54,11 +71,12 @@ function Controller(parent){
       charts.process(json);
     }
     catch(err){
-      console.log("Error on sys: " + err + " "+ msg.toString());
+      console.log("Error on sys: " + err + " MSG received: "+ msg.toString());
     }
   });
 
   socket.on('data', function(msg){
+    $( "#dialog-data-output" ).html(msg);
 //    $( "#dialog-output" ).html(msg);
 //    console.log(msg);
     try {
@@ -69,7 +87,7 @@ function Controller(parent){
         player.process(json);
       }
     catch(err){
-       console.log("Error on data: " + err + " "+ msg.toString());
+       console.log("Error on data: " + err + " MSG received:  "+ msg.toString());
     }
   });
 }

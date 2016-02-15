@@ -76,6 +76,19 @@ function Player(parent){
   });
   $('#dialog-player').html(audio_html);
 
+  function check_audio(){
+    var audio = document.getElementById("audio_player");
+    if(!audio.paused)
+      if (isNaN(audio.duration)){
+        $( '#audio_player'  ).attr('src', '/stream/?time='+ ((new Date()).getTime()));
+        $( '#audio_player'  ).load();
+        $( '#audio_player' ).trigger('play');
+      }
+    setTimeout(check_audio, 250);
+  }
+
+  check_audio();
+
   /****/
 
   socket.on('sys', function(msg){

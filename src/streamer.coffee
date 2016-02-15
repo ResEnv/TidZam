@@ -7,6 +7,7 @@ class Streamer
     me.buffer_path  = "tmp/"
     me.sample_file  = me.buffer_path + "sample.wav"
     me.SAMPLE_SIZE  = 0.5
+    me.OVERLAP      = 0.5
     me.sample_count = 0
     @url = me.url   = "stream.ogg"
     me.state        = "loading"
@@ -58,7 +59,7 @@ class Streamer
   splitSample:  (f) ->
       file  = me.buffer_path + 'stream.wav'
       dst   = me.sample_file
-      begin = me.sample_count * me.SAMPLE_SIZE;
+      begin = me.sample_count * (1-me.OVERLAP) * me.SAMPLE_SIZE;
 
       ctr = spawn('sox', [file, dst, "trim", begin, me.SAMPLE_SIZE]);
       ctr.stderr.on 'data', (data)  -> f(-1, data);

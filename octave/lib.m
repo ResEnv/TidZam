@@ -104,9 +104,14 @@ end
 
 function [r window_size] =  reshape_samples(v, x_ori,y_ori, x_dst,y_dst)
 	r = [];
+	printf('RoI Reshape: ');
 	for i=1:size(v,1)
 		[t size] = reshape_sample(v(i,:), x_ori,y_ori, x_dst,y_dst);
 		r = [r; t ];
+
+		if mod(i,100) == 0
+		   printf('*');
+		end
 	end
 	window_size = size;
 end
