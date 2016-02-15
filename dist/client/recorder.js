@@ -56,7 +56,7 @@ function Recorder (parent){
 
   this.dialog = $( '#dialog-records' ).dialog({
     autoOpen: false,
-    width: 700,
+    width: 800,
     modal: false,
     dialogClass: 'dialog-records',
     buttons: {
@@ -101,10 +101,17 @@ function Recorder (parent){
     }
   });
 
-  $( '#training_div' ).hide();
-  $( '#dialog-records' ).html(records_html);
+  $( '#records_classe_selection option:selected' ).on('change',function(){
+    update();
+  });
 
-  this.show = function(classe){
+  $( '#dataset_classe_selection option:selected' ).on('change',function(){
+    update();
+  });
+
+
+
+  this.update = function update(){
     socket.emit('sys', JSON.stringify({
       sys:{
         training:{list:''},
@@ -116,6 +123,13 @@ function Recorder (parent){
         }
       }
     }));
+  }
+
+  $( '#training_div' ).hide();
+  $( '#dialog-records' ).html(records_html);
+
+  this.show = function(classe){
+    this.update();
     this.dialog.dialog('open');
   };
 
@@ -132,6 +146,8 @@ function Recorder (parent){
 
     $( "#slider-records_parameters_filter" ).css("width:400px;");
     $( '#training_div' ).hide();
+
+
 
 
   $( '#records_classe_selection' ).on('change', function(ev, ui){
@@ -182,7 +198,7 @@ function Recorder (parent){
 
       if (obj.type == 'records'){
         $ ( '#span_record_fft' ).html(obj.num + "("+obj.class+") /" +  + obj.size + " samples");
-        $( '#audio_player_record' ).attr('src', '../' + obj.path);
+        $( '#audio_player_record' ).attr('src', '../' + obj.path +'?time='+((new Date()).getTime()));
       }
       else if(obj.type == 'datasets' || obj.type == 'training'){
         $ ( '#span_record_fft' ).html("Dataset: " + obj.dataset.file + "("+obj.dataset.size+") (yes:"+obj.dataset.size_yes+", no:"+obj.dataset.size_no+"): sample "+obj.dataset.num);
@@ -197,6 +213,7 @@ function Recorder (parent){
       if(obj.sys.records) {
         if (obj.sys.records.list){
           $( '#records_classe_selection' ).empty();
+          $( '#records_classe_selection' ).append($("<option> </option>").attr("value", ""));
           for (var i=0; i < obj.sys.records.list.length; i++)
             $( '#records_classe_selection' ).append($("<option></option>").attr("value", obj.sys.records.list[i]).text(obj.sys.records.list[i]));
         }
@@ -217,6 +234,7 @@ function Recorder (parent){
 
         if (obj.sys.dataset.list){
           $( '#dataset_classe_selection' ).empty();
+          $( '#dataset_classe_selection' ).append($("<option> </option>").attr("value", ""));
           for (var i=0; i < obj.sys.dataset.list.length; i++)
             $( '#dataset_classe_selection' ).append($("<option></option>").attr("value", obj.sys.dataset.list[i]).text(obj.sys.dataset.list[i]));
         }
@@ -235,6 +253,7 @@ function Recorder (parent){
 
         if (obj.sys.training.list){
           $( '#training_classe_selection' ).empty();
+          $( '#training_classe_selection' ).append($("<option> </option>").attr("value", ""));
           for (var i=0; i < obj.sys.training.list.length; i++)
             $( '#training_classe_selection' ).append($("<option></option>").attr("value", obj.sys.training.list[i]).text(obj.sys.training.list[i]));
         }

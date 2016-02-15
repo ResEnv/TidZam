@@ -13,7 +13,7 @@ function ClassifierChart(parent, names){
 
   var dialog_info = this.dialog_info =  $( "#dialog-info" ).dialog({
     autoOpen: false,
-    width:600,
+    width:800,
     modal: false,
   });
 
@@ -46,7 +46,7 @@ function ClassifierChart(parent, names){
   }
 
   this.dialog_info.update = function(conf){
-    var print = "<table style=\"float:left;\" class=\"table_info\">"+
+    var print = "<table style=\"float:left; width:100%;\" class=\"table_info\">"+
       "<tr style=\"font-weight:bold;text-align:center;\"><td>Classifiers</td><td>Under Estimation</td><td>Over Estimation</td> <td>Structure</td> <td>RoI</td> <td>Date</td></tr>";
     for (i=0; i < conf.classifiers.length; i++)
     print += "<tr><td><a href='#?classifier="+conf.classifiers[i].name+"'  class='link_classifier_img'>"+conf.classifiers[i].name + "</a></td>"+

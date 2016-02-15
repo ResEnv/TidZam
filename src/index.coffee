@@ -86,7 +86,12 @@ class controller
 					else console.log "WARNING Error controller: " + data
 
 				if sys.dataset?.build then 	me.dataset.buildDataset sys.dataset?.build, (code,data) ->
-					if 			code == 0	 then	socket.emit 'sys', JSON.stringify {sys:{dataset:{build:sys.dataset.build, status:'done',data:data}}}
+					if 			code == 0
+						socket.emit 'sys', JSON.stringify {sys:{dataset:{build:sys.dataset.build, status:'done',data:data}}}
+						me.dataset.getTrainingSets (code,data) ->
+							if !code then me.socket.emit 'sys', JSON.stringify {sys:{training:{list: data }}}
+							else console.log "WARNING Error controller: " + data
+
 					else if code == 1  then	socket.emit 'sys', JSON.stringify {sys:{dataset:{build:sys.dataset.build, status:'running',data:data}}}
 					else socket.emit 'sys', JSON.stringify {sys:{dataset:{build:sys.dataset.build, status:'failed',out:data}}}
 
@@ -109,7 +114,11 @@ class controller
 				if sys.records?.build
 					me.dataset.buildDatabase sys.records?.build, (code,data) ->
 						console.log data
-						if 			code == 0	 then	socket.emit 'sys', JSON.stringify {sys:{records:{build:sys.records.build, status:'done',data:data}}}
+						if 			code == 0
+							socket.emit 'sys', JSON.stringify {sys:{records:{build:sys.records.build, status:'done',data:data}}}
+							me.dataset.getDatasets (code,data) ->
+								if !code then me.socket.emit 'sys', JSON.stringify {sys:{dataset:{list: data }}}
+								else console.log "WARNING Error controller: " + data
 						else if code == 1  then	socket.emit 'sys', JSON.stringify {sys:{records:{build:sys.records.build, status:'running',data:data}}}
 						else socket.emit 'sys', JSON.stringify {sys:{records:{build:sys.records.build, status:'failed',out:data}}}
 

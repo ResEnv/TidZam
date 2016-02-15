@@ -19,6 +19,11 @@ function Player(parent){
     autoOpen: true,
     width: 690,
     modal: false,
+    open:function(){
+      socket.emit('sys', JSON.stringify(
+        {sys:{streams:''}}
+      ));
+    },
     buttons: {
       Update: function(){
         socket.emit('sys', JSON.stringify(
@@ -39,7 +44,9 @@ function Player(parent){
       },
       Play: function(){
         if(!document.getElementById('audio_player').paused && !document.getElementById('audio_player').played.length)
+          $( '#audio_player'  ).attr('src', '/stream/?time='+ ((new Date()).getTime()));
           $( '#audio_player'  ).load();
+          $( '#audio_player' ).trigger('play');
         socket.emit('sys', JSON.stringify(
           {sys:{control:'play'}}
         ))
@@ -50,11 +57,17 @@ function Player(parent){
         ))
       },
       Prev: function(){
+        $( '#audio_player'  ).attr('src', '/stream/?time='+ ((new Date()).getTime()));
+        $( '#audio_player'  ).load();
+        $( '#audio_player' ).trigger('play');
         socket.emit('sys', JSON.stringify(
           {sys:{control:'prev'}}
         ))
       },
       Next: function(){
+        $( '#audio_player'  ).attr('src', '/stream/?time='+ ((new Date()).getTime()));
+        $( '#audio_player'  ).load();
+        $( '#audio_player' ).trigger('play');
         socket.emit('sys', JSON.stringify(
           {sys:{control:'next'}}
         ))

@@ -191,7 +191,7 @@ do
 		print_res(res, chan);
 
 	catch err
-		printf('{"Error":"%s" }\n', err);
+		printf('{"Error"}');
 	end_try_catch
 
 	fflush(stdout);

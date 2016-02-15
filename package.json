@@ -1,17 +1,21 @@
 {
-  "name": "nodejs",
-  "version": "0.0.0",
-  "description": "",
+  "name": "TidZam",
+  "version": "0.1.0",
+  "description": "TidMarsh: Bird Learning and Recognition Engine",
   "main": "index.js",
   "scripts": {
-    "compile": "(coffee --compile --output dist --watch src &);",
     "start": "node ./dist/index.js",
+    "install": "mkdir data && mkdir data/classifiers data/database data/dataset data/processed_records data/stream data/training",
+    "compile": "(coffee --compile --output dist --watch src &);",
     "test": "mocha -w --compilers coffee:coffee-script/register"
   },
-  "author": "",
-  "license": "BSD-2-Clause",
+  "author": "DUHART Clément <duhart@mit.edu>",
+
+  "license": "MIT",
   "devDependencies": {
     "should": "~8.1.1",
-    "mocha": "~2.3.4"
+    "mocha": "~2.3.4",
+    "socket.io": "~1.4.4",
+    "express":"~4.13.3"
   }
 }
