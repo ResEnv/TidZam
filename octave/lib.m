@@ -2,7 +2,7 @@ global SIZE_WINDOW = [598 92];
 global FILTER_LOW = 1000;
 global FILTER_HIGH = 15000; % Bird between 1 - 5 Khz
 warning('off','all');
-addpath(genpath('lib'));
+addpath(genpath('octave/lib'));
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Predicition functions
