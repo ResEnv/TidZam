@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "start": "node ./dist/index.js",
-    "install": "mkdir data tmp && mkdir data/classifiers data/database data/dataset data/processed_records data/stream data/training && coffee --compile --output dist src && cp -R dist/client/ dist/",
+    "install": "mkdir data tmp && mkdir data/classifiers data/database data/dataset data/processed_records data/stream data/training && coffee --compile --output dist src && cp -R src/client/ dist/",
     "compile": "(coffee --compile --output dist --watch src &);",
     "test": "mocha -w --compilers coffee:coffee-script/register"
   },
