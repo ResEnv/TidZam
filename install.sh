@@ -1,4 +1,4 @@
-sudo apt-get update
+#sudo apt-get update
 sudo apt-get install nodejs streamripper octave octave-audio   octave-control  octave-general  octave-signal sox vorbis-tools mplayer
 
 mkdir data tmp

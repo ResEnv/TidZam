@@ -140,7 +140,10 @@ end
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-nns = load_classifiers(PATH, CLASSIFIERS);
+do
+   nns = load_classifiers(PATH, CLASSIFIERS);
+	 pause(TIME)
+until (length(nns) > 0)
 print_conf(nns, TIME);
 
 % Prediction on sample
