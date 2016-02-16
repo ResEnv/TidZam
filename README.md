@@ -8,7 +8,9 @@ TidZam is a web-based software interested in living form (birg, frog, etc) geo-l
 
 Other Interests in Click Echo Recognition in human echo-localization.
 
-Online Access: http://tidmarsh.duhart-clement.fr/
+* Play Online: http://tidmarsh.duhart-clement.fr/
+
+* HowTo: http://tidmarsh.duhart-clement.fr/client/doc/demo.mov 
 
 # Installation
 
