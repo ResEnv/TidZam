@@ -1,5 +1,5 @@
-global SIZE_WINDOW = [598 92];
-global FILTER_LOW = 1000;
+global SIZE_WINDOW = [636 92];
+global FILTER_LOW = 100;
 global FILTER_HIGH = 15000; % Bird between 1 - 5 Khz
 warning('off','all');
 addpath(genpath('octave/lib'));
@@ -652,7 +652,7 @@ function [nn dbn] = learning_dbn(train_x, unlabelled, train_y, archi, epoch, alp
 	nn = dbnunfoldtonn(dbn, size(train_y,2));
 	nn.activation_function = 'sigm';
 	[batchsize nb] = learning_compute_batchsize(train_y);
-	opts.numepochs =  10;
+	opts.numepochs =  30;
 	opts.batchsize = batchsize;
 	nn = nntrain(nn, train_x, train_y, opts);
 

@@ -19,7 +19,7 @@ while 1
 
     S = X(num+1,:);
 
-    S = reshape(S, 598,92);
+    S = reshape(S, 636,92);
     S = S([shape_left+1:end],:);
     S = S([1:end-shape_right],:);
     SIZE_WINDOW =  size(S);

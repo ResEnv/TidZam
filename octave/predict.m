@@ -159,10 +159,10 @@ do
 
 		v=X';
 		if SHOW == 1
-			visualize(v, [min(min(v)) max(max(v))], 598, 92);
+			visualize(v, [min(min(v)) max(max(v))], 636, 92);
 			title(chan);
 		else
-			a = visualize(v, [min(min(v)) max(max(v))], 598, 92);
+			a = visualize(v, [min(min(v)) max(max(v))], 636, 92);
 			imwrite (a, 'tmp/fft.png')
 		end
 
@@ -172,7 +172,7 @@ do
 		for i=1:size(nns,2)
 			nns{i}{2}.testing 	= 1;
 
-			[T window_size] =  reshape_sample(S, 598, 92, nns{i}{2}.database.shape_left, nns{i}{2}.database.shape_right);
+			[T window_size] =  reshape_sample(S, 636, 92, nns{i}{2}.database.shape_left, nns{i}{2}.database.shape_right);
 			nns{i}{2} 		= nnff(nns{i}{2}, T, zeros(size(T,1), nns{i}{2}.size(end)));
 			nns{i}{2}.testing 	= 0;
 

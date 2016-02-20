@@ -71,8 +71,8 @@ printf("\nTraining set prepraration:\n");
 
 [train_x] = train_x([1: batchsize*nb ],:);
 [train_y]	= train_y([1: batchsize*nb ],:);
-[train_x] = reshape_samples(train_x, 598, 92, shape_left,shape_right);
-[test_x window_size] 	= reshape_samples(test_x, 598, 92, shape_left,shape_right);
+[train_x] = reshape_samples(train_x, 636, 92, shape_left,shape_right);
+[test_x window_size] 	= reshape_samples(test_x, 636, 92, shape_left,shape_right);
 printf(" done.\n");
 
 
