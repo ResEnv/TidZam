@@ -79,7 +79,7 @@ class Streamer
       me.prototype.setState("ready")
       return
     me.prototype.control("next")
-    setTimeout me.prototype.play, me.SAMPLE_SIZE*1000
+    setTimeout me.prototype.play, me.SAMPLE_SIZE*1000*(1-me.OVERLAP)
 
   pause: ->
     me.prototype.setState('pause')
