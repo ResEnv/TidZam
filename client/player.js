@@ -138,6 +138,7 @@ function Player(parent){
       if (json.sys.streams){
         $( '#audio_selection' ).empty();
         $( '#audio_selection' ).append($("<option></option>").attr("value", " "));
+        $( '#audio_selection' ).append($("<option>Microphone</option>").attr("value", "microphone"));
         for (var i=0; i < json.sys.streams.length; i++)
           $( '#audio_selection' ).append($("<option></option>").attr("value", json.sys.streams[i]).text(json.sys.streams[i]));
         }
