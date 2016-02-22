@@ -68,10 +68,11 @@ test_y  = dataset.test_y;
 printf("\nTraining set prepraration:\n");
 [batchsize nb] 				= learning_compute_batchsize(train_y)
 [count_by_class] 			= dataset_example_count_by_class (train_y)
-
 [train_x] = train_x([1: batchsize*nb ],:);
 [train_y]	= train_y([1: batchsize*nb ],:);
-[train_x] = reshape_samples(train_x, 636, 92, shape_left,shape_right);
+printf('Filtering train dataset (100/%d): ', size(train_x,1));
+[train_x window_size] = reshape_samples(train_x, 636, 92, shape_left,shape_right);
+printf('\nFiltering evaluation dataset (100/%d): ', size(train_x,1));
 [test_x window_size] 	= reshape_samples(test_x, 636, 92, shape_left,shape_right);
 printf(" done.\n");
 
@@ -83,12 +84,13 @@ X = train_x(id1,:);
 [batchsize_pre nb_pre] = learning_compute_batchsize(X)
 X = X([1:batchsize_pre * nb_pre],:);
 
+size(train_x)
 % ================================== LEARNING ==================================
 if SAE
 	[nn sae] = learning_sae(train_x, train_x, train_y, [64 8], 200, 0.1, 0.5); % 64 8
 	v = sae.ae{1}.W{1}(:,2:end)';
-	figure;
 
+	figure;
 	visualize(v, [min(min(v)) max(max(v))], shape_left, shape_right);
 	for i=2:numel(sae.ae)
 		figure
@@ -97,28 +99,44 @@ if SAE
 
 else if DBN
 
-	[nn dbn] = learning_dbn(train_x, X, train_y, structure, epoch, learning_rate, 0.5);
+	[nn sae dbn] = learning_dbn(train_x, X, train_y, structure, epoch, learning_rate, 0.5);
 
 	v = dbn.rbm{1}.W';
+	visualize(v, [min(min(v)) max(max(v))],window_size(1,1), window_size(1,2));
+
+	for i=2:numel(dbn.rbm)
+	  figure
+		visualize(dbn.rbm{i}.W');
+	end
+
+	figure
+	v = sae.ae{1}.W{1}(:,2:end)';
+	visualize(v, [min(min(v)) max(max(v))],window_size(1,1), window_size(1,2))
+
+	% Print result weight
 	a = visualize(v, [min(min(v)) max(max(v))],window_size(1,1), window_size(1,2));
 	pos = findstr(out,'.nn');
 	out_img = out([1:pos-1]);
 	imwrite (a, sprintf('%s-L1.png', out_img));
-
-	for i=2:numel(dbn.rbm)
-		a = visualize(dbn.rbm{i}.W');
+	for i=2:numel(sae.ae)
+		a = visualize(sae.ae{i}.W{1}');
 		imwrite (a, sprintf('%s-L%d.png', out_img, i));
 	end
 
-else if CNN
-	rand('state',0)
 
+else if CNN
+  train_x = double(reshape(train_x',92,92,700));
+	train_y = train_y';
+  test_x = double(reshape(test_x',92,92,600));
+	test_y = test_y';
+
+	rand('state',0)
 	cnn.layers = {
-	struct('type', 'i')
-	struct('type', 'c', 'outputmaps', 6, 'kernelsize', 5)
-	struct('type', 's', 'scale', 2)
-	struct('type', 'c', 'outputmaps', 12, 'kernelsize', 5)
-	struct('type', 's', 'scale', 2)
+		struct('type', 'i') %input layer
+    struct('type', 'c', 'outputmaps', 24, 'kernelsize', 5) %convolution layer
+    struct('type', 's', 'scale', 2) %sub sampling layer
+    struct('type', 'c', 'outputmaps', 6, 'kernelsize', 5) %convolution layer
+    struct('type', 's', 'scale', 2) %subsampling layer
 	};
 
 	opts.alpha = 1;
@@ -128,7 +146,10 @@ else if CNN
 	cnn = cnnsetup(cnn, train_x, train_y);
 	cnn = cnntrain(cnn, train_x, train_y, opts);
 
-	[er, bad] = cnntest(cnn, test_x, test_y);
+	[cnn.train_er, bad] = cnntest(cnn, train_x, train_y);
+	[cnn.test_er, bad] = cnntest(cnn, test_x, test_y);
+
+	save("-binary", out, "cnn");
 	exit
 
 else	printf("\n Nothing todo\n");
@@ -155,4 +176,5 @@ nn.learning_rate = learning_rate;
 printf("\nSize:%dx%d\nshape_left:%d\nshape_right:%d\n", nn.database.size, nn.database.shape_left,nn.database.shape_right);
 
 printf("\nSaving ...");
+
 save("-binary", out,"nn");

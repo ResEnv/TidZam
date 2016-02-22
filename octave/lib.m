@@ -104,7 +104,6 @@ end
 
 function [r window_size] =  reshape_samples(v, x_ori,y_ori, x_dst,y_dst)
 	r = [];
-	printf('RoI Reshape: ');
 	for i=1:size(v,1)
 		[t size] = reshape_sample(v(i,:), x_ori,y_ori, x_dst,y_dst);
 		r = [r; t ];
@@ -624,33 +623,67 @@ function [nn sae] = learning_sae(train_x, unlabelled, train_y, archi, epoch, lea
 	[nn] = learning_nn(sae, train_x,train_y, epoch, batchsize, 1);
 end
 
-function [nn dbn] = learning_dbn(train_x, unlabelled, train_y, archi, epoch, alpha, momentum)
+function [nn sae dbn] = learning_dbn(train_x, unlabelled, train_y, archi, epoch, alpha, momentum)
 	rand('state',1)
 	dbn.sizes = archi;
 	if exist("epoch") == 0
 		epoch = 1;
 	end
 	if exist("alpha") == 0
-		alpha = 1;
+		alpha = 0.9;
 	end
 	if exist("momentum") == 0
-		momentum = 0;
+		momentum = 0.25;
 	end
 	rand('state',1);
 	[batchsize nb] = learning_compute_batchsize(unlabelled);
 
+	archi
 	printf("RBM Learning\n=========\n");
 	dbn.sizes = archi;
-	opts.numepochs =   epoch;
+	opts.numepochs =  epoch;
 	opts.batchsize = batchsize;
 	opts.momentum  =   momentum;
 	opts.alpha     =   alpha;
 	dbn = dbnsetup(dbn, unlabelled, opts);
 	dbn = dbntrain(dbn, unlabelled, opts);
+	nn = dbnunfoldtonn(dbn, size(unlabelled,2));
+
+
+  printf("SAE Learning\n=========\n");
+	sae = saesetup([size(unlabelled,2), archi]);
+	for i=1:numel(sae.ae)
+		sae.ae{i}.W{1} = nn.W{i};
+%		sae.ae{i}.inputZeroMaskedFraction          = 0.1;
+%		sae.ae{i}.dropoutFraction                  = 0.5;            %  Dropout level (http://www.cs.toronto.edu/~hinton/absps/dropout.pdf)
+	end
+
+	sae.ae{1}.activation_function       = 'sigm';
+	sae.ae{1}.learningRate              = 0.01;
+	sae.ae{1}.inputZeroMaskedFraction   = 0.5;
+	opts.numepochs =   1;
+	opts.batchsize =  batchsize
+
+	sae = saetrain(sae, train_x, opts);
 
 	printf("NN Learning\n=========\n");
-	nn = dbnunfoldtonn(dbn, size(train_y,2));
+	[nn] = learning_nn(sae, train_x,train_y, 30, batchsize, 0.01);
+
+return
+
+	%?	[nn] = dbnunfoldtonn(dbn, size(train_y,2));
 	nn.activation_function = 'sigm';
+
+%	nn.activation_function              = 'tanh_opt';   %  Activation functions of hidden layers: 'sigm' (sigmoid) or 'tanh_opt' (optimal tanh).
+%	nn.learningRate                     = 2;            %  learning rate Note: typically needs to be lower when using 'sigm' activation function and non-normalized inputs.
+%	nn.momentum                         = 0.5;          %  Momentum
+%	nn.scaling_learningRate             = 0.9;            %  Scaling factor for the learning rate (each epoch)
+%	nn.weightPenaltyL2                  = 0;            %  L2 regularization
+%	nn.nonSparsityPenalty               = 0.1;            %  Non sparsity penalty
+%	nn.sparsityTarget                   = 0.05;         %  Sparsity target
+%	nn.inputZeroMaskedFraction          = 0.1;            %  Used for Denoising AutoEncoders
+%	nn.dropoutFraction                  = 0.25;            %  Dropout level (http://www.cs.toronto.edu/~hinton/absps/dropout.pdf)
+
 	[batchsize nb] = learning_compute_batchsize(train_y);
 	opts.numepochs =  30;
 	opts.batchsize = batchsize;
@@ -678,8 +711,15 @@ function [nn er bad] = learning_nn(sae, train_x,train_y, epoch, batchsize, learn
 	archi = [archi size(train_y, 2)]
 
 	nn = nnsetup(archi);
-	nn.activation_function              = 'sigm';
-	nn.learningRate                     = learningRate;
+	nn.activation_function              = 'tanh_opt';   %  Activation functions of hidden layers: 'sigm' (sigmoid) or 'tanh_opt' (optimal tanh).
+	nn.learningRate                     = 2;            %  learning rate Note: typically needs to be lower when using 'sigm' activation function and non-normalized inputs.
+	nn.momentum                         = 0.5;          %  Momentum
+	nn.scaling_learningRate             = 0.9;            %  Scaling factor for the learning rate (each epoch)
+	nn.weightPenaltyL2                  = 0;            %  L2 regularization
+	nn.nonSparsityPenalty               = 0.1;            %  Non sparsity penalty
+	nn.sparsityTarget                   = 0.05;         %  Sparsity target
+	nn.inputZeroMaskedFraction          = 0.1;            %  Used for Denoising AutoEncoders
+	nn.dropoutFraction                  = 0.25;            %  Dropout level (http://www.cs.toronto.edu/~hinton/absps/dropout.pdf)
 
 	for i=1: numel(sae.ae)
 		nn.W{i} = sae.ae{i}.W{1};
