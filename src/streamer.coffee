@@ -56,10 +56,9 @@ class Streamer
     if @url.indexOf('microphone') != -1
       me.ctr_buffering = spawn 'arecord', ["-f","dat",me.buffer_path + 'stream.wav']
       me.ctr_buffering.stdout.on 'data', ->
-        console.log 'ICICIC'
       me.prototype.initSample()
       me.prototype.setState('ready')
-      setTimeout me.prototype.play, 1000
+      setTimeout me.prototype.play, 1500
     else
       @startBuffering @url, (code, data) ->
         if !code || 0
