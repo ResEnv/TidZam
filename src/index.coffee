@@ -11,18 +11,20 @@ class controller
 
 		me.streamer 	= new (require('./streamer.js')).Streamer (state)->
 			if me.socket
-				me.socket.emit 'sys', JSON.stringify( {sys: {state:state, sample_count:me.streamer.getSampleCount()} } )
+				me.serv.io.sockets.emit 'sys', JSON.stringify( {sys: {state:state, sample_count:me.streamer.getSampleCount()} } )
 
 		me.classifier  = new (require('./classifier.js')).Classifier me.streamer.getSampleFile(), (code, data) ->
 			if me.socket
-				me.socket.emit 'data', data
+				me.serv.io.sockets.emit 'data', data
 		me.classifier.init()
 
 		me.serv.io.on 'connection', (socket) ->
 			me.socket = socket
 			setTimeout (->
-				me.socket.emit 'data', JSON.stringify(me.classifier.getConf())
+				me.serv.io.sockets.emit 'data', JSON.stringify(me.classifier.getConf())
 				), 5000
+
+#			me.serv.io.sockets.emit 'sys', 'test'
 
 			socket.on 'sys', (msg) ->
 				console.log 'sys event: ' + msg.toString()
@@ -42,7 +44,7 @@ class controller
 				if sys.url		 then me.streamer.url = me.stream.getStreamPath() + sys.url
 
 				if sys.streams? then me.stream.getStreams (code, data) ->
-					if !code then me.socket.emit 'sys', JSON.stringify {sys:{streams: data }}
+					if !code then me.serv.io.sockets.emit 'sys', JSON.stringify {sys:{streams: data }}
 					else console.log "WARNING Error controller: " + data
 
 				if sys.sample && sys.classe then me.dataset.addCurrent sys.sample, sys.classe, me.streamer.getSampleFile(), (code, data) ->
@@ -56,19 +58,19 @@ class controller
 						else console.log 'Toggle of classifier ' + sys.classifier?.toggle + ' failed.' + data
 
 				if sys.classifier?.list? then me.classifier.getAvailableClassifiers (code,data) ->
-					if !code then me.socket.emit 'sys', JSON.stringify {sys:{classifier:{list: data }}}
+					if !code then me.serv.io.sockets.emit 'sys', JSON.stringify {sys:{classifier:{list: data }}}
 					else console.log "WARNING Error controller: " + data
 
 				# TRAINING EVENTS
 				if sys.training?.list? then me.dataset.getTrainingSets (code,data) ->
-					if !code then me.socket.emit 'sys', JSON.stringify {sys:{training:{list: data }}}
+					if !code then me.serv.io.sockets.emit 'sys', JSON.stringify {sys:{training:{list: data }}}
 					else console.log "WARNING Error controller: " + data
 
 				if sys.training?.build then 	me.dataset.buildClassifier sys.training.build,  sys.training.filter_low, sys.training.filter_high,  sys.training.structure, sys.training.epoch, sys.training.learning_rate, (code,data) ->
 					if 			code == 0
 						socket.emit 'sys', JSON.stringify {sys:{training:{build:sys.training.build, status:'done',data:data}}}
 						me.classifier.getAvailableClassifiers (code,data) ->
-							if !code then me.socket.emit 'sys', JSON.stringify {sys:{classifier:{list: data }}}
+							if !code then me.serv.io.sockets.emit 'sys', JSON.stringify {sys:{classifier:{list: data }}}
 							else console.log "WARNING Error controller: " + data
 					else if code == 1  then	socket.emit 'sys', JSON.stringify {sys:{training:{build:sys.training.build, status:'running',data:data}}}
 					else socket.emit 'sys', JSON.stringify {sys:{training:{build:sys.training.build, status:'failed',out:data}}}
@@ -82,14 +84,14 @@ class controller
 
 				# DATASET EVENTS
 				if sys.dataset?.list? then me.dataset.getDatasets (code,data) ->
-					if !code then me.socket.emit 'sys', JSON.stringify {sys:{dataset:{list: data }}}
+					if !code then me.serv.io.sockets.emit 'sys', JSON.stringify {sys:{dataset:{list: data }}}
 					else console.log "WARNING Error controller: " + data
 
 				if sys.dataset?.build then 	me.dataset.buildDataset sys.dataset?.build, (code,data) ->
 					if 			code == 0
 						socket.emit 'sys', JSON.stringify {sys:{dataset:{build:sys.dataset.build, status:'done',data:data}}}
 						me.dataset.getTrainingSets (code,data) ->
-							if !code then me.socket.emit 'sys', JSON.stringify {sys:{training:{list: data }}}
+							if !code then me.serv.io.sockets.emit 'sys', JSON.stringify {sys:{training:{list: data }}}
 							else console.log "WARNING Error controller: " + data
 
 					else if code == 1  then	socket.emit 'sys', JSON.stringify {sys:{dataset:{build:sys.dataset.build, status:'running',data:data}}}
@@ -108,7 +110,7 @@ class controller
 
 				# DATABASE RECORD EVENTS
 				if sys.records?.list?	then me.dataset.getDatabases (code, data) ->
-					if !code then me.socket.emit 'sys', JSON.stringify {sys:{records:{list: data }}}
+					if !code then me.serv.io.sockets.emit 'sys', JSON.stringify {sys:{records:{list: data }}}
 					else console.log "WARNING Error controller: " + data
 
 				if sys.records?.build
@@ -117,7 +119,7 @@ class controller
 						if 			code == 0
 							socket.emit 'sys', JSON.stringify {sys:{records:{build:sys.records.build, status:'done',data:data}}}
 							me.dataset.getDatasets (code,data) ->
-								if !code then me.socket.emit 'sys', JSON.stringify {sys:{dataset:{list: data }}}
+								if !code then me.serv.io.sockets.emit 'sys', JSON.stringify {sys:{dataset:{list: data }}}
 								else console.log "WARNING Error controller: " + data
 						else if code == 1  then	socket.emit 'sys', JSON.stringify {sys:{records:{build:sys.records.build, status:'running',data:data}}}
 						else socket.emit 'sys', JSON.stringify {sys:{records:{build:sys.records.build, status:'failed',out:data}}}
