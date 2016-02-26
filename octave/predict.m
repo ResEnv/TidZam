@@ -99,20 +99,66 @@ end
 
 
 
-
+global res_hist_num = {1,1,1,1,1,1,1,1}; % TODO
+global res_hist = {};
 function print_res(res, chan)
 	fflush(stdout);
 	fflush(stderr);
 	printf('{"chan":%d, "analysis":', chan);
+res;
+%	if exist("res_hist_num") == 0
+%		res_hist_num = 1;
+%	end
+	global CHANNEL;
+	res_hist_size = 2 * CHANNEL ;
+	global res_hist_num;
+	global res_hist;
 
-	pred = {};
-	j = 1;
-	for i=1:size(res,2)
-		if res{i}{2} > 0.5
-			pred{j} = res{i}{1};
-			j = j + 1;
+
+
+	res_hist{chan}{res_hist_num{chan}} = res;
+	res_hist_num{chan} = res_hist_num{chan} + 1;
+
+	% size(res_hist{chan})
+	pred{1} = '->';
+	if res_hist_num{chan} > res_hist_size
+		res_hist_num{chan} = 1;
+		%printf("RAZ \n");
+
+
+		scores = zeros(res_hist_size, size(res_hist{chan}{1}, 2)); % Score Matrix
+		for sample=1:res_hist_size
+		%size(res_hist{chan}{sample}) % Number of neural outputs on sample
+			for output=1:size(res_hist{chan}{sample},2)
+				%res_hist{chan}{sample}{output}{1}
+				%res_hist{chan}{sample}{output}{2}
+				scores(sample, output) = res_hist{chan}{sample}{output}{2};
+			end
+		end
+
+		j = 1;
+		pred{j} = 'Don t Know';
+
+		% F(c) = | sum_A (P(c/a) )-P(!c/a) |
+		scores = max(sum(scores)/res_hist_size  - 0.5, 0);
+		for i=1:numel(scores)
+			if scores(i) > 0
+				pred{j} = res_hist{chan}{sample}{i}{1};
+				j = j  + 1;
+			end
 		end
 	end
+
+
+ % Threshold prediction output between (P(A) - alpha*P(1-A)) > 50%
+	%pred = {};
+	%j = 1;
+	%for i=1:size(res,2)
+	%	if res{i}{2} > 0.5
+	%		pred{j} = res{i}{1};
+	%		j = j + 1;
+	%	end
+	%end
 
 	if numel(pred) == 0
 		printf("{\"result\":[\"Don't know\"], ");
@@ -147,7 +193,8 @@ until (length(nns) > 0)
 print_conf(nns, TIME);
 
 % Prediction on sample
-[X S f t, CHANNEL] = sample_spectogram_sound(STREAM, 1);
+[X S f t, ch] = sample_spectogram_sound(STREAM, 1);
+global CHANNEL = ch;
 TIME = TIME / CHANNEL
 global SIZE_WINDOW;
 

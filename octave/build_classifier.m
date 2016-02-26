@@ -80,27 +80,66 @@ printf(" done.\n");
 
 
 id1 = find(sum(abs(train_y.-[1 0]),2) == 0 );
-X = train_x(id1,:);
-[batchsize_pre nb_pre] = learning_compute_batchsize(X)
-X = X([1:batchsize_pre * nb_pre],:);
+unlabelled = train_x; %train_x(id1,:);
+[batchsize_pre nb_pre] = learning_compute_batchsize(unlabelled)
+unlabelled = unlabelled([1:batchsize_pre * nb_pre],:);
 
 size(train_x)
 % ================================== LEARNING ==================================
-if SAE
-	[nn sae] = learning_sae(train_x, train_x, train_y, [64 8], 200, 0.1, 0.5); % 64 8
-	v = sae.ae{1}.W{1}(:,2:end)';
+if DBN
 
-	figure;
-	visualize(v, [min(min(v)) max(max(v))], shape_left, shape_right);
-	for i=2:numel(sae.ae)
-		figure
-		visualize(sae.ae{i}.W{1}(:,2:end)');
-	end
+structure
+printf("RBM Learning\n=========\n");
+dbn.sizes = structure;
+opts.numepochs =  epoch
+opts.batchsize = batchsize_pre
+opts.momentum  =   0.5;
+opts.alpha     =   learning_rate;
+dbn = dbnsetup(dbn, unlabelled, opts);
+dbn = dbntrain(dbn, unlabelled, opts);
+nn = dbnunfoldtonn(dbn, size(unlabelled,2));
 
-else if DBN
 
-	[nn sae dbn] = learning_dbn(train_x, X, train_y, structure, epoch, learning_rate, 0.5);
+printf("SAE Learning\n=========\n");
+sae = saesetup([size(unlabelled,2), structure]);
+for i=1:numel(sae.ae)
+	sae.ae{i}.W{1} = nn.W{i};
+	sae.ae{i}.W{2}(:, 2:end) = nn.W{i}'(2:end,:);
 
+	sae.ae{i}.activation_function       			 = 'sigm';
+	sae.ae{i}.learningRate              			 = 0.01;
+%	sae.ae{i}.inputZeroMaskedFraction          = 0.1;
+	sae.ae{i}.dropoutFraction                  = 0.5;            %  Dropout level (http://www.cs.toronto.edu/~hinton/absps/dropout.pdf)
+end
+
+opts.numepochs =   3;
+opts.batchsize =  batchsize
+sae = saetrain(sae, train_x, opts);
+
+printf("NN Learning\n=========\n");
+% Use the SDAE to initialize a FFNN
+structure = [sae.ae{1}.size(1,1)];
+for i=1: numel(sae.ae)
+	structure = [structure sae.ae{i}.size(1,2)];
+end
+structure = [structure size(train_y, 2)]
+nn = nnsetup(structure);
+
+for i=1: numel(sae.ae)
+	nn.W{i} = sae.ae{i}.W{1};
+end
+
+nn.activation_function      = 'sigm';
+opts.learningRate 					= 0.01;
+opts.numepochs 							=  50;
+opts.batchsize 							= batchsize;
+
+
+nn = nntrain(nn, train_x, train_y, opts);
+[er, bad] = nntest(nn, train_x, train_y);
+
+
+% ================================ VIZUALIZATION ================================
 	v = dbn.rbm{1}.W';
 	visualize(v, [min(min(v)) max(max(v))],window_size(1,1), window_size(1,2));
 
@@ -122,6 +161,10 @@ else if DBN
 		a = visualize(sae.ae{i}.W{1}');
 		imwrite (a, sprintf('%s-L%d.png', out_img, i));
 	end
+
+	v = nn.W{1}(:,2:end)';
+	figure
+	visualize(v, [min(min(v)) max(max(v))],window_size(1,1), window_size(1,2))
 
 
 else if CNN
@@ -155,7 +198,7 @@ else if CNN
 else	printf("\n Nothing todo\n");
 	printf("USAGE: train.m --train=DATASET_FILE --classifier-out=OUTPUT_FILE [--sae | --dbn | --cnn] \n");
 	return
-end end end
+end end
 
 % ================================== EVALUATION ==================================
 printf("\nEvaluation on learning dataset \n");
@@ -164,6 +207,7 @@ nn_evaluate (nn, train_x, train_y, labels);
 printf("\nEvaluation on testing dataset \n");
 nn =  nn_evaluate (nn, test_x, test_y, labels);
 
+% ==================================== SAVING ====================================
 nn.database = dataset.database;
 nn.database.size = window_size;
 nn.database.shape_left = shape_left;
@@ -176,5 +220,5 @@ nn.learning_rate = learning_rate;
 printf("\nSize:%dx%d\nshape_left:%d\nshape_right:%d\n", nn.database.size, nn.database.shape_left,nn.database.shape_right);
 
 printf("\nSaving ...");
-
+%pause
 save("-binary", out,"nn");
