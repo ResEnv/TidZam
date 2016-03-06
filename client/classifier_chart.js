@@ -79,7 +79,7 @@ function ClassifierChart(parent, names){
 
   var dialog = this.dialog =   $( '#dialog-neural-outputs'  ).dialog({
     autoOpen: false,
-    width:600,
+    width:800,
     modal: false,
     dialogClass: 'dialog-neural-outputs',
     buttons: {

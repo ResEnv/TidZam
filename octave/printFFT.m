@@ -56,7 +56,7 @@ else if length(findstr(file, 'dataset')) > 0 && length(findstr(file, 'dat')) > 0
   X = [database.yes; database.no];
   X = X(num+1,:);
 
-  S = reshape(X, 636,92);
+  S = reshape(X, 638,92);
   S = S([shape_left+1:end],:);
   S = S([1:end-shape_right],:);
   SIZE_WINDOW =  size(S);

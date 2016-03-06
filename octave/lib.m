@@ -1,5 +1,5 @@
-global SIZE_WINDOW = [636 92];
-global FILTER_LOW = 100;
+global SIZE_WINDOW = [638 92];
+global FILTER_LOW = 50;
 global FILTER_HIGH = 15000; % Bird between 1 - 5 Khz
 warning('off','all');
 addpath(genpath('octave/lib'));
@@ -22,7 +22,7 @@ function [S, f, t] =  sample_spectogram (x, Fs, FILTER_LOW, FILTER_HIGH)
 	[S, f, t] = specgram(x, fftn, Fs, window, window-step);
 	start = ceil(fftn*FILTER_LOW/Fs);
 	stop  = fftn*FILTER_HIGH/Fs;
-	S = abs(S(start:stop,:)); # magnitude in range 500<f<=10 000 Hz.
+	S = abs(S(start:stop,:)); # magnitude in range 100<f<=15 000 Hz.
 
 	if size(S,2) < 1
 		S = [];

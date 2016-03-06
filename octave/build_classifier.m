@@ -70,10 +70,10 @@ printf("\nTraining set prepraration:\n");
 [count_by_class] 			= dataset_example_count_by_class (train_y)
 [train_x] = train_x([1: batchsize*nb ],:);
 [train_y]	= train_y([1: batchsize*nb ],:);
-printf('Filtering train dataset (100/%d): ', size(train_x,1));
-[train_x window_size] = reshape_samples(train_x, 636, 92, shape_left,shape_right);
-printf('\nFiltering evaluation dataset (100/%d): ', size(train_x,1));
-[test_x window_size] 	= reshape_samples(test_x, 636, 92, shape_left,shape_right);
+printf('RoI Filtering train dataset (100/%d): ', size(train_x,1));
+[train_x window_size] = reshape_samples(train_x, 638, 92, shape_left,shape_right);
+printf('\nRoI Filtering evaluation dataset (100/%d): ', size(train_x,1));
+[test_x window_size] 	= reshape_samples(test_x, 638, 92, shape_left,shape_right);
 printf(" done.\n");
 
 
@@ -141,31 +141,31 @@ nn = nntrain(nn, train_x, train_y, opts);
 
 % ================================ VIZUALIZATION ================================
 	v = dbn.rbm{1}.W';
-	visualize(v, [min(min(v)) max(max(v))],window_size(1,1), window_size(1,2));
+	%visualize(v, [min(min(v)) max(max(v))],window_size(1,1), window_size(1,2));
 
 	for i=2:numel(dbn.rbm)
-	  figure
-		visualize(dbn.rbm{i}.W');
+	  %figure
+		% visualize(dbn.rbm{i}.W');
 	end
 
-	figure
-	v = sae.ae{1}.W{1}(:,2:end)';
-	visualize(v, [min(min(v)) max(max(v))],window_size(1,1), window_size(1,2))
+	%figure
+	v = nn.W{1}(:,2:end)'; %sae.ae{1}.W{1}(:,2:end)';
+	%visualize(v, [min(min(v)) max(max(v))],window_size(1,1), window_size(1,2))
 
 	% Print result weight
 	a = visualize(v, [min(min(v)) max(max(v))],window_size(1,1), window_size(1,2));
 	pos = findstr(out,'.nn');
 	out_img = out([1:pos-1]);
 	imwrite (a, sprintf('%s-L1.png', out_img));
-	for i=2:numel(sae.ae)
-		a = visualize(sae.ae{i}.W{1}');
+	for i=2:numel(nn.W)
+		a = visualize(nn.W{i}(:,2:end)');
 		imwrite (a, sprintf('%s-L%d.png', out_img, i));
 	end
 
 	v = nn.W{1}(:,2:end)';
 	figure
 	visualize(v, [min(min(v)) max(max(v))],window_size(1,1), window_size(1,2))
-
+%pause
 
 else if CNN
   train_x = double(reshape(train_x',92,92,700));

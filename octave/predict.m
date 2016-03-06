@@ -140,7 +140,7 @@ res;
 		pred{j} = 'Don t Know';
 
 		% F(c) = | sum_A (P(c/a) )-P(!c/a) |
-		scores = max(sum(scores)/res_hist_size  - 0.5, 0);
+		scores = max(sum(scores)/res_hist_size  - 0.75, 0);
 		for i=1:numel(scores)
 			if scores(i) > 0
 				pred{j} = res_hist{chan}{sample}{i}{1};
@@ -206,10 +206,10 @@ do
 
 		v=X';
 		if SHOW == 1
-			visualize(v, [min(min(v)) max(max(v))], 636, 92);
+			visualize(v, [min(min(v)) max(max(v))], 638, 92);
 			title(chan);
 		else
-			a = visualize(v, [min(min(v)) max(max(v))], 636, 92);
+			a = visualize(v, [min(min(v)) max(max(v))], 638, 92);
 			imwrite (a, 'tmp/fft.png')
 		end
 
@@ -219,7 +219,7 @@ do
 		for i=1:size(nns,2)
 			nns{i}{2}.testing 	= 1;
 
-			[T window_size] =  reshape_sample(S, 636, 92, nns{i}{2}.database.shape_left, nns{i}{2}.database.shape_right);
+			[T window_size] =  reshape_sample(S, 638, 92, nns{i}{2}.database.shape_left, nns{i}{2}.database.shape_right);
 			nns{i}{2} 		= nnff(nns{i}{2}, T, zeros(size(T,1), nns{i}{2}.size(end)));
 			nns{i}{2}.testing 	= 0;
 

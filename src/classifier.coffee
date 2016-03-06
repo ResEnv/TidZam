@@ -78,7 +78,7 @@ class Classifier
         console.log data.toString()
 
     ctr.stdout.on 'data', (data) ->
-      #console.log data.toString()
+    #  console.log data.toString()
       if data.toString().indexOf('Starting') != -1
         ready = true
       if !ready then return
