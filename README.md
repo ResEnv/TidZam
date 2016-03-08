@@ -10,9 +10,7 @@ Other Interests in Click Echo Recognition in human echo-localization.
 
 # Installation
 
-```
 npm install
-```
 
 # Starting
 ```
