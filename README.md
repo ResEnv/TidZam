@@ -11,7 +11,7 @@ Other Interests in Click Echo Recognition in human echo-localization.
 # Installation
 
 ```
-npm install tidzam
+npm tidzam
 ```
 
 # Starting
