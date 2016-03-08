@@ -68,6 +68,13 @@ for j = 1:length(dirlist)
     end
   end
 end
+printf("\n[DONE]\n");
+
+if size(others,1) < size_min
+  while (size(others,1) < size_min)
+    others = [others; others];
+  endwhile
+end
 
 printf("\nDataset generation for %s\n", dataset.name);
 X = [];
@@ -77,6 +84,7 @@ printf("Available positive: %d samples\n", size(X,1));
 X = [X; current.no];
 Y = [Y; zeros(size(current.no,1),1) ones(size(current.no,1),1)];
 printf("Available negative: %d samples\n", size(current.no,1));
+printf("\n[DONE]\n");
 
 printf("\nDataset Randomization: ");
 id1 = ceil(rand(size(X,1),1) * size(X,1));
@@ -87,7 +95,7 @@ X(id1,:) = X(id2,:);
 Y(id1,:) = Y(id2,:);
 X(id2,:) = tx;
 Y(id2,:) = ty;
-printf("done.\n")
+printf("\n[DONE]\n");
 
 if size(X,1) == 0
   printf("No sample found.\n");
@@ -95,12 +103,13 @@ if size(X,1) == 0
 end
 
 printf("\nDataset preparation:\n");
-while (size(X,1) < size_min / 2)
+while (size(X,1) < size_min / 4)
   X = [X; current.yes];
   Y = [Y; [ones(size(current.yes,1),1) zeros(size(current.yes,1),1)]];
 endwhile
-X = X([1:ceil(size_min / 2)],:);
-Y = Y([1:ceil(size_min / 2)],:);
+X = X([1:ceil(size_min / 4)],:);
+Y = Y([1:ceil(size_min / 4)],:);
+printf("\n[DONE]\n");
 
 printf("* %d samples generated from %s.\n", size(X,1), dataset.name);
 nop = ceil(rand( size_min - size(X,1), 1) * size(others,1));
@@ -123,10 +132,11 @@ printf("done.\n")
 printf("\nEvaluation Dataset Extraction:\n");
 dataset.train_x = X([1:ceil(size(X,1)*p)], :);
 dataset.train_y = Y([1:ceil(size(X,1)*p)], :);
-dataset.test_x = X([ceil(size(X,1)*p+1):end], :);
+dataset.test_x  = X([ceil(size(X,1)*p+1):end], :);
 dataset.test_y  = Y([ceil(size(X,1)*p+1):end], :);
 
 printf("Train Dataset: %d samples\n Test Dataset: %d samples\nSize:%dx%d\n", size(dataset.train_x,1), size(dataset.test_x,1), dataset.database.size);
 
 printf("\nSaving ...");
 save ("-binary", file_out,  "dataset");
+printf("\n[DONE]\n");

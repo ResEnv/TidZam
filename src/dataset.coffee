@@ -42,6 +42,7 @@ class Dataset
       '--shape-right=' + filter_high]
     ready = false
     ctr.stdout.on 'data', (data)  ->
+          #console.log data.toString()
           if data.toString().indexOf('Starting') != -1
             ready = true
           if !ready then return
@@ -106,7 +107,7 @@ class Dataset
     ]
     ready = false
     ctr.stdout.on 'data', (data)  ->
-          console.log data.toString()
+          #console.log data.toString()
           if data.toString().indexOf('Starting') != -1
             ready = true
           if !ready then return

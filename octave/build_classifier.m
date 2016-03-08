@@ -57,7 +57,7 @@ end
 % =================================== DATA  ===================================
 printf("Data loading ...");
 load(TRAIN_PATH);
-printf(" [DONE]\n");
+printf("\n[DONE]\n");
 
 labels  = {dataset.name,'no'};
 train_x = dataset.train_x;
@@ -74,7 +74,7 @@ printf('RoI Filtering train dataset (100/%d): ', size(train_x,1));
 [train_x window_size] = reshape_samples(train_x, 638, 92, shape_left,shape_right);
 printf('\nRoI Filtering evaluation dataset (100/%d): ', size(train_x,1));
 [test_x window_size] 	= reshape_samples(test_x, 638, 92, shape_left,shape_right);
-printf(" done.\n");
+printf("\n[DONE]\n");
 
 
 
@@ -98,6 +98,7 @@ opts.alpha     =   learning_rate;
 dbn = dbnsetup(dbn, unlabelled, opts);
 dbn = dbntrain(dbn, unlabelled, opts);
 nn = dbnunfoldtonn(dbn, size(unlabelled,2));
+printf("\n[DONE]\n");
 
 
 printf("SAE Learning\n=========\n");
@@ -115,6 +116,7 @@ end
 opts.numepochs =   3;
 opts.batchsize =  batchsize
 sae = saetrain(sae, train_x, opts);
+printf("\n[DONE]\n");
 
 printf("NN Learning\n=========\n");
 % Use the SDAE to initialize a FFNN
@@ -137,6 +139,7 @@ opts.batchsize 							= batchsize;
 
 nn = nntrain(nn, train_x, train_y, opts);
 [er, bad] = nntest(nn, train_x, train_y);
+printf("\n[DONE]\n");
 
 
 % ================================ VIZUALIZATION ================================
@@ -163,8 +166,8 @@ nn = nntrain(nn, train_x, train_y, opts);
 	end
 
 	v = nn.W{1}(:,2:end)';
-	figure
-	visualize(v, [min(min(v)) max(max(v))],window_size(1,1), window_size(1,2))
+	%figure
+	%visualize(v, [min(min(v)) max(max(v))],window_size(1,1), window_size(1,2))
 %pause
 
 else if CNN
@@ -218,6 +221,12 @@ nn.epoch 		= epoch;
 nn.learning_rate = learning_rate;
 
 printf("\nSize:%dx%d\nshape_left:%d\nshape_right:%d\n", nn.database.size, nn.database.shape_left,nn.database.shape_right);
+
+if sum(nn.err) > 0.05
+	printf("Weak classifier");
+else
+	printf("Strong classifier");
+end
 
 printf("\nSaving ...");
 %pause

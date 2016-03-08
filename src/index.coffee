@@ -1,3 +1,7 @@
+rmdir = require('rimraf')
+spawn = require('child_process').spawn
+ncp   = require('ncp').ncp;
+
 class controller
 	me = this
 
@@ -24,8 +28,6 @@ class controller
 				me.serv.io.sockets.emit 'data', JSON.stringify(me.classifier.getConf())
 				), 5000
 
-#			me.serv.io.sockets.emit 'sys', 'test'
-
 			socket.on 'sys', (msg) ->
 				console.log 'sys event: ' + msg.toString()
 				try
@@ -37,9 +39,19 @@ class controller
 						console.log "WARNING: Socket error for sys event: " + err + " "+ msg
 						return
 
+				# Data System Reinitialization !! WARNING DELETE ALL DATA
+				if sys.init?
+					rmdir './data/processed_records/*', ->
+						rmdir './data/database/*', ->
+						rmdir './data/dataset/*', ->
+							rmdir './data/training/*', ->
+								rmdir './data/classifiers/*', ->
+									# Put default classifier Nothing and its dataset
+									ncp "./Nothing/", "./data/classifiers/", ->
+										ncp "./Nothing/Nothing.dat", "./data/dataset/Nothing.dat", (err) ->
+											console.log "System cleaned and ready."+ err
+
 				# RECOGNITION ENGINE INTERFACE EVENTS
-
-
 				if sys.control then me.streamer.control(sys.control)
 				if sys.url		 then me.streamer.url = me.stream.getStreamPath() + sys.url
 
@@ -52,6 +64,10 @@ class controller
 						else console.log 'Error adding sample: ' + data
 
 				# CLASSIFIER EVENT
+
+				if sys.classifier?.reload?
+					me.classifier.stop()
+					me.classifier.init()
 
 				if sys.classifier?.toggle  then me.classifier.toggleClassifier sys.classifier?.toggle, (code, data) ->
 						if !code then console.log 'Toggle of classifier ' + data + ' done.'
@@ -88,6 +104,7 @@ class controller
 					else console.log "WARNING Error controller: " + data
 
 				if sys.dataset?.build then 	me.dataset.buildDataset sys.dataset?.build, (code,data) ->
+					#console.log data
 					if 			code == 0
 						me.serv.io.sockets.emit 'sys', JSON.stringify {sys:{dataset:{build:sys.dataset.build, status:'done',data:data}}}
 						me.dataset.getTrainingSets (code,data) ->
@@ -115,7 +132,7 @@ class controller
 
 				if sys.records?.build
 					me.dataset.buildDatabase sys.records?.build, (code,data) ->
-						console.log data
+						#console.log data
 						if 			code == 0
 							me.serv.io.sockets.emit 'sys', JSON.stringify {sys:{records:{build:sys.records.build, status:'done',data:data}}}
 							me.dataset.getDatasets (code,data) ->
