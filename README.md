@@ -14,11 +14,12 @@ Other Interests in Click Echo Recognition in human echo-localization.
 
 # Installation
 
-```
-npm install tidzam
-```
+npm install
 
 # Starting
 ```
 npm start
 ```
+# Demo
+[![ScreenShot](http://duhart-clement.fr/imgs/demo.png)](https://youtu.be/XT93JgFPfqA)
+Play Online: http://tidmarsh.duhart-clement.fr/client/index.html

@@ -4,7 +4,7 @@ function ClassifierChart(parent, names){
   var plots = this.plots = new Array();
   this.dialog_chart_name = "dialog-neural-outputs";
   parent.innerHTML +=
-  '<div id="'+  this.dialog_chart_name +'" title="Neural Knowledge Units"></div>'+
+  '<div id="'+  this.dialog_chart_name +'" title="Neural Memory"></div>'+
   '<div id="dialog-info" title="Details" ></div>' +
   '<div id="dialog-info-img" title="Hidden Layers" ></div>' +
   '<div id="dialog-database-new" title="Record database name">'+
@@ -79,7 +79,7 @@ function ClassifierChart(parent, names){
 
   var dialog = this.dialog =   $( '#dialog-neural-outputs'  ).dialog({
     autoOpen: false,
-    width:600,
+    width:800,
     modal: false,
     dialogClass: 'dialog-neural-outputs',
     buttons: {

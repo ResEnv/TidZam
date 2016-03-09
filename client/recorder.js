@@ -25,14 +25,14 @@ function Recorder (parent){
   '<img src="/record-fft" id="img_record_fft"><br>'+
   '<div id="records_parameters">'+
     '<div id="records_parameters_filter" style="text-center;">'+
-      '<div id="slider-records_parameters_filter" style="width:598px;  margin-left: auto;  margin-right: auto;"></div>' +
+      '<div id="slider-records_parameters_filter" style="width:636px;  margin-left: auto;  margin-right: auto;"></div>' +
       '<span id="span_record_fft"></span> <br> '+
       'RoI Range: '+
-      '<input type="text" id="filter_low" value="1000" maxlength="5" size="5"> - '+
+      '<input type="text" id="filter_low" value="50" maxlength="5" size="5"> - '+
       '<input type="text" id="filter_high" maxlength="5" value="15000" size="5"> Hz</div></div><br>'+
       '<div id="training_div">'+
-        'Structure: '+'<input type type="input" id="training_structure" value="8 64">'+
-        'Epoch: <input type="input" id="training_epoch" value="128" size="3">'+
+        'Structure: '+'<input type type="input" id="training_structure" value="16">'+
+        'Epoch: <input type="input" id="training_epoch" value="25" size="3">'+
         'Learning rate:<input type="text" id="training_learning_rate" value="0.01" size="5"></div>';
 
   var popup = $('#records_popup').dialog({
@@ -68,10 +68,10 @@ function Recorder (parent){
         $( '#audio_player_record' ).trigger('play');
       },
       Prev: function(){
-        socket.emit('sys', '{"sys":{"'+current_player+'":{"show":"' +$( '#'+current_player+'_classe_selection option:selected' ).val() + '", "do":"prev","filter_low":'+Math.ceil(($('#filter_low').val()-1000)*0.042)+', "filter_high":'+Math.ceil((598- Math.ceil($('#filter_high').val()-1000)*0.042))+'}}}');
+        socket.emit('sys', '{"sys":{"'+current_player+'":{"show":"' +$( '#'+current_player+'_classe_selection option:selected' ).val() + '", "do":"prev","filter_low":'+Math.ceil(($('#filter_low').val()-50)*0.042)+', "filter_high":'+Math.ceil((636- Math.ceil($('#filter_high').val()-50)*0.042))+'}}}');
       },
       Next: function(){
-        socket.emit('sys', '{"sys":{"'+current_player+'":{"show":"' +$( '#'+current_player+'_classe_selection option:selected' ).val() + '", "do":"next","filter_low":'+Math.ceil(($('#filter_low').val()-1000)*0.042)+', "filter_high":'+Math.ceil((598- Math.ceil($('#filter_high').val()-1000)*0.042))+'}}}');
+        socket.emit('sys', '{"sys":{"'+current_player+'":{"show":"' +$( '#'+current_player+'_classe_selection option:selected' ).val() + '", "do":"next","filter_low":'+Math.ceil(($('#filter_low').val()-50)*0.042)+', "filter_high":'+Math.ceil((636- Math.ceil($('#filter_high').val()-50)*0.042))+'}}}');
       },
 
       F1: function(){
@@ -95,8 +95,8 @@ function Recorder (parent){
         '", "structure":"'+          $( '#training_structure' ).val()+
         '", "epoch":'+              $( '#training_epoch' ).val()+
         ', "learning_rate":'+       $( '#training_learning_rate' ).val()+
-        ', "filter_low":'+Math.ceil(($('#filter_low').val()-1000)*0.042)+
-        ', "filter_high":'+Math.ceil((598- Math.ceil($('#filter_high').val()-1000)*0.042))+' } } }');
+        ', "filter_low":'+Math.ceil(($('#filter_low').val()-50)*0.042)+
+        ', "filter_high":'+Math.ceil((636- Math.ceil($('#filter_high').val()-50)*0.042))+' } } }');
       }
     }
   });
@@ -135,9 +135,9 @@ function Recorder (parent){
 
   $( "#slider-records_parameters_filter" ).slider({
       range: true,
-      min: 1000,
+      min: 50,
       max: 15000,
-      values: [ 1000, 15000 ],
+      values: [ 50, 15000 ],
       slide: function( event, ui ) {
           $( "#filter_low" ).val(ui.values[ 0 ] );
           $( "#filter_high" ).val(ui.values[ 1 ] );
@@ -221,11 +221,11 @@ function Recorder (parent){
         if (obj.sys.records.show)
           updateDatabaseNum (obj.sys.records.show);
 
-          if (obj.sys.records.build && obj.sys.records.status)
-            $('#records_label_popup').html('Dataset for ' + obj.sys.records.build + ': ' + obj.sys.records.status);
+        if (obj.sys.records.build && obj.sys.records.status)
+          $('#records_label_popup').html('Dataset for ' + obj.sys.records.build + ': ' + obj.sys.records.status);
 
-          if (obj.sys.records.build && obj.sys.records.data)
-            $('#records_out').html( $('#records_out').html() + obj.sys.records.data.replace(/(?:\r\n|\r|\n)/g,'<br>'));
+        if (obj.sys.records.build && obj.sys.records.data)
+          $('#records_out').html( $('#records_out').html() + obj.sys.records.data.replace(/(?:\r\n|\r|\n)/g,'<br>'));
       }
 
       if(obj.sys.dataset) {

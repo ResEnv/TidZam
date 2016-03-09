@@ -1,5 +1,5 @@
-global SIZE_WINDOW = [598 92];
-global FILTER_LOW = 1000;
+global SIZE_WINDOW = [638 92];
+global FILTER_LOW = 50;
 global FILTER_HIGH = 15000; % Bird between 1 - 5 Khz
 warning('off','all');
 addpath(genpath('octave/lib'));
@@ -22,7 +22,7 @@ function [S, f, t] =  sample_spectogram (x, Fs, FILTER_LOW, FILTER_HIGH)
 	[S, f, t] = specgram(x, fftn, Fs, window, window-step);
 	start = ceil(fftn*FILTER_LOW/Fs);
 	stop  = fftn*FILTER_HIGH/Fs;
-	S = abs(S(start:stop,:)); # magnitude in range 500<f<=10 000 Hz.
+	S = abs(S(start:stop,:)); # magnitude in range 100<f<=15 000 Hz.
 
 	if size(S,2) < 1
 		S = [];
@@ -104,7 +104,6 @@ end
 
 function [r window_size] =  reshape_samples(v, x_ori,y_ori, x_dst,y_dst)
 	r = [];
-	printf('RoI Reshape: ');
 	for i=1:size(v,1)
 		[t size] = reshape_sample(v(i,:), x_ori,y_ori, x_dst,y_dst);
 		r = [r; t ];
@@ -589,111 +588,7 @@ function [batchsize nb] = learning_compute_batchsize(Y)
 
 end
 
-function [nn sae] = learning_sae(train_x, unlabelled, train_y, archi, epoch, learningRate, mask)
-	if exist("batchsize") == 0
-		batchsize = size(train_x,1);
-	end
 
-	if exist("rate") == 0
-		learningRate = 1;
-	end
-
-	if exist("mask") == 0
-		mask = 0.5;
-	end
-
-	if exist("epoch") == 0
-		epoch = 1;
-	end
-
-	printf("SAE Learning\n=========\n");
-	rand('state',0);
-	[batchsize nb] = learning_compute_batchsize(unlabelled);
-	sae = saesetup([size(train_x,2), archi]);
-	sae.ae{1}.activation_function       = 'sigm';
-	sae.ae{1}.learningRate              = learningRate;
-	sae.ae{1}.inputZeroMaskedFraction   = mask;
-	opts.numepochs =   1;
-	opts.batchsize =  batchsize
-
-	sae = saetrain(sae, train_x, opts);
-
-	printf("NN Learning\n=========\n");
-	rand('state',0)
-	[batchsize nb] = learning_compute_batchsize(train_y);
-	[nn] = learning_nn(sae, train_x,train_y, epoch, batchsize, 1);
-end
-
-function [nn dbn] = learning_dbn(train_x, unlabelled, train_y, archi, epoch, alpha, momentum)
-	rand('state',1)
-	dbn.sizes = archi;
-	if exist("epoch") == 0
-		epoch = 1;
-	end
-	if exist("alpha") == 0
-		alpha = 1;
-	end
-	if exist("momentum") == 0
-		momentum = 0;
-	end
-	rand('state',1);
-	[batchsize nb] = learning_compute_batchsize(unlabelled);
-
-	printf("RBM Learning\n=========\n");
-	dbn.sizes = archi;
-	opts.numepochs =   epoch;
-	opts.batchsize = batchsize;
-	opts.momentum  =   momentum;
-	opts.alpha     =   alpha;
-	dbn = dbnsetup(dbn, unlabelled, opts);
-	dbn = dbntrain(dbn, unlabelled, opts);
-
-	printf("NN Learning\n=========\n");
-	nn = dbnunfoldtonn(dbn, size(train_y,2));
-	nn.activation_function = 'sigm';
-	[batchsize nb] = learning_compute_batchsize(train_y);
-	opts.numepochs =  10;
-	opts.batchsize = batchsize;
-	nn = nntrain(nn, train_x, train_y, opts);
-
-end
-
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-function [nn er bad] = learning_nn(sae, train_x,train_y, epoch, batchsize, learningRate);
-	if exist("batchsize") == 0
-		batchsize = size(train_x,1);
-	end
-
-	if exist("rate") == 0
-		learningRate = 1;
-	end
-
-	% Use the SDAE to initialize a FFNN
-	archi = [sae.ae{1}.size(1,1)];
-	for i=1: numel(sae.ae)
-		archi = [archi sae.ae{i}.size(1,2)];
-	end
-	archi = [archi size(train_y, 2)]
-
-	nn = nnsetup(archi);
-	nn.activation_function              = 'sigm';
-	nn.learningRate                     = learningRate;
-
-	for i=1: numel(sae.ae)
-		nn.W{i} = sae.ae{i}.W{1};
-	end
-
-	%train nn
-	if exist("epoch") == 0
-		epoch = 100;
-	end
-	opts.numepochs =  epoch;
-	opts.batchsize = batchsize;
-	nn = nntrain(nn, train_x, train_y, opts);
-	[er, bad] = nntest(nn, train_x, train_y);
-end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function [nn bad] = nn_evaluate (nn, x, y, labels)

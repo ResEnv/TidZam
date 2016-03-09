@@ -15,12 +15,13 @@
   <script src="dataset.js"></script>
   <script src="controller.js"></script>
   <script src="classifiers.js"></script>
+  <script src="speaker_stats.js"></script>
   <script src="classifier_chart.js"></script>
 
   <!--  <link rel="stylesheet" href="/resources/demos/style.css">-->
 
   <script>
-  google.load('visualization', '1.1', {'packages':['line']});
+  google.load('visualization', '1.1', {'packages':['line','corechart']});
   ready = false;
   google.setOnLoadCallback(function(){ready = true;});
 
@@ -47,6 +48,18 @@
   .console{
     background-color:black;
     color:white;
+  }
+
+  #speaker_stats_piechart{
+    
+  }
+
+  #results{
+    margin: 10px;
+    width:100%;
+    text-align:center;
+    font-size:20px;
+    font-style:bold;
   }
 
   body{

@@ -11,7 +11,7 @@ function Player(parent){
   <select id="audio_selection">\
   <option value="/stream/">stream.ogg</option>\
   </select><br><br>\
-  <span id="results" style="text-align:center;width:100%;">Results</span>\
+  <div id="results">Results</div>\
   <img src="/fft" id="img_fft">\
   ';
 
@@ -131,13 +131,15 @@ function Player(parent){
   this.process = function(json){
     if (json.analysis && json.chan){
         document.getElementById('img_fft').src = '/fft?time='+((new Date()).getTime());
-        $( '#results' ).html( 'Predictions: ' + json.analysis.result + ' (chan:' + json.chan + ')');
+        if (json.analysis.result.indexOf('->') == -1)
+        $( '#results' ).html( ''+ json.chan + ' - ' +json.analysis.result);
       }
 
     if(json.sys)
       if (json.sys.streams){
         $( '#audio_selection' ).empty();
         $( '#audio_selection' ).append($("<option></option>").attr("value", " "));
+        $( '#audio_selection' ).append($("<option>Microphone</option>").attr("value", "microphone"));
         for (var i=0; i < json.sys.streams.length; i++)
           $( '#audio_selection' ).append($("<option></option>").attr("value", json.sys.streams[i]).text(json.sys.streams[i]));
         }

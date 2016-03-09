@@ -2,6 +2,7 @@ spawn = require('child_process').spawn
 
 class Streamer
   me = this
+  me.ctr_buffering = null
 
   constructor: (f) ->
     me.buffer_path  = "tmp/"
@@ -27,7 +28,10 @@ class Streamer
     dst = me.buffer_path + 'stream.ogg'
     if isURL (path)
       console.log 'Buffering from url ' + path
-      ctr = spawn 'streamripper', [path,"-M","1","-d", me.buffer_path]
+      if me.ctr_buffering
+        me.ctr_bufferin.stdin.pause();
+        me.ctr_buffering.kill()
+      me.ctr_buffering = spawn 'streamripper', [path,"-M","1","-d", me.buffer_path]
       ctr = spawn 'cp', [me.buffer_path + '/Streamripper_rips/incomplete/ - Title Unknown.ogg', dst]
     else
       console.log 'Buffering from local file ' + path
@@ -46,14 +50,24 @@ class Streamer
 
   loading: ->
     @setState('loading')
-    @startBuffering @url, (code, data) ->
-      if !code || 0
-        me.prototype.convertOggtoWav data, (code, data) ->
-          if !code || 0
-            me.prototype.initSample()
-            me.prototype.setState('ready')
-          else me.prototype.setState('error wav convertion')
-      else me.prototype.setState('error loading')
+    me.ctr_bufferin?.stdin?.pause();
+    me.ctr_buffering?.kill()
+
+    if @url.indexOf('microphone') != -1
+      me.ctr_buffering = spawn 'arecord', ["-f","dat",me.buffer_path + 'stream.wav']
+      me.ctr_buffering.stdout.on 'data', ->
+      me.prototype.initSample()
+      me.prototype.setState('ready')
+      setTimeout me.prototype.play, 1500
+    else
+      @startBuffering @url, (code, data) ->
+        if !code || 0
+          me.prototype.convertOggtoWav data, (code, data) ->
+            if !code || 0
+              me.prototype.initSample()
+              me.prototype.setState('ready')
+            else me.prototype.setState('error wav convertion')
+        else me.prototype.setState('error loading')
 
   initSample: -> me.sample_count = 0;
   splitSample:  (f) ->
@@ -79,7 +93,7 @@ class Streamer
       me.prototype.setState("ready")
       return
     me.prototype.control("next")
-    setTimeout me.prototype.play, me.SAMPLE_SIZE*1000
+    setTimeout me.prototype.play, me.SAMPLE_SIZE*1000*(1-me.OVERLAP)
 
   pause: ->
     me.prototype.setState('pause')

@@ -82,9 +82,13 @@ for j = 1:length(dirlist)
   X = reshape(S, 1, size(S,1)*size(S,2));
 
   if strcmp(cl,'+')
-        database.yes = [database.yes ; X];
+        if(size(X,2) == size(database.yes,2) || size(database.yes,2) == 0)
+          database.yes = [database.yes ; X];
+        end
   else
-        database.no = [database.no ; X];
+        if(size(X,2) == size(database.no,2) || size(database.no,2) == 0)
+          database.no = [database.no ; X];
+        end
   end
 
   unix (sprintf('mv "%s" "%s"', strcat(folder_in, dirlist(j).name(1:end)), folder_processed));

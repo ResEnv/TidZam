@@ -18,12 +18,12 @@ function nn = nnsetup(architecture)
     nn.testing                          = 0;            %  Internal variable. nntest sets this to one.
     nn.output                           = 'sigm';       %  output unit 'sigm' (=logistic), 'softmax' and 'linear'
 
-    for i = 2 : nn.n   
+    for i = 2 : nn.n
         % weights and weight momentum
         nn.W{i - 1} = (rand(nn.size(i), nn.size(i - 1)+1) - 0.5) * 2 * 4 * sqrt(6 / (nn.size(i) + nn.size(i - 1)));
         nn.vW{i - 1} = zeros(size(nn.W{i - 1}));
-        
+
         % average activations (for use with sparsity)
-        nn.p{i}     = zeros(1, nn.size(i));   
+        nn.p{i}     = zeros(1, nn.size(i));
     end
 end

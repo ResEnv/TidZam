@@ -7,6 +7,7 @@ function Controller(parent){
 
   var player = this.player = new Player(parent);
   var charts = this.charts = new ClassifierChart(parent);
+  var speakerstats = this.speakerstats = new SpeakerStats(parent);
 
   // WINDOWS DECLARATION
   this.parent.innerHTML += '<div id="dialog-console" title="JSON WebSocket" ></div>'+
@@ -45,6 +46,10 @@ function Controller(parent){
 
 
   // WINDOWS CALLER
+  this.openSpeakerstats = function(){
+    this.speakerstats.show();
+  };
+
   this.openPlayer = function(){
     this.player.show();
   };
@@ -82,7 +87,6 @@ function Controller(parent){
     try {
       json = JSON.parse(msg.toString());
       charts.process(json);
-
       //if (json.results)
       player.process(json);
       }
