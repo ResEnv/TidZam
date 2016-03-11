@@ -80,7 +80,7 @@ printf("\n[DONE]\n");
 
 
 id1 = find(sum(abs(train_y.-[1 0]),2) == 0 );
-unlabelled = train_x; %train_x(id1,:);
+unlabelled = train_x(id1,:);
 [batchsize_pre nb_pre] = learning_compute_batchsize(unlabelled)
 unlabelled = unlabelled([1:batchsize_pre * nb_pre],:);
 
