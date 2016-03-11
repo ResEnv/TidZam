@@ -6,7 +6,6 @@ class Server
     me.fft_file           = @fft_file            = "tmp/fft.png"
     me.fft__databasefile  = @fft__databasefile   = "tmp/database-fft.png"
 
-
     @app = app       = require("express")()
     @server = server = require('http').Server(app)
     @io = io         = require('socket.io')(server);

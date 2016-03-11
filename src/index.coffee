@@ -6,11 +6,11 @@ class controller
 	me = this
 
 	constructor: ->
-
+		me.port = 1234;
 		me.dataset    = new (require('./dataset.js')).Dataset
 		me.stream    = new (require('./stream.js')).Stream
 
-		me.serv 		= new (require('./server.js')).Server (1234)
+		me.serv 		= new (require('./server.js')).Server (me.port)
 		me.serv.start()
 
 		me.streamer 	= new (require('./streamer.js')).Streamer (state)->
@@ -21,6 +21,8 @@ class controller
 			if me.socket
 				me.serv.io.sockets.emit 'data', data
 		me.classifier.init()
+
+		chainAPI = new (require('./chainAPI.js')).chainAPI(me.port)
 
 		me.serv.io.on 'connection', (socket) ->
 			me.socket = socket
@@ -43,13 +45,13 @@ class controller
 				if sys.init?
 					rmdir './data/processed_records/*', ->
 						rmdir './data/database/*', ->
-						rmdir './data/dataset/*', ->
-							rmdir './data/training/*', ->
-								rmdir './data/classifiers/*', ->
-									# Put default classifier Nothing and its dataset
-									ncp "./Nothing/", "./data/classifiers/", ->
-										ncp "./Nothing/Nothing.dat", "./data/dataset/Nothing.dat", (err) ->
-											console.log "System cleaned and ready."+ err
+							rmdir './data/dataset/*', ->
+								rmdir './data/training/*', ->
+									rmdir './data/classifiers/*', ->
+										# Put default classifier Nothing and its dataset
+										ncp "./Nothing/", "./data/classifiers/", ->
+											ncp "./Nothing/Nothing.dat", "./data/dataset/Nothing.dat", (err) ->
+												console.log "System cleaned and ready."+ err
 
 				# RECOGNITION ENGINE INTERFACE EVENTS
 				if sys.control then me.streamer.control(sys.control)

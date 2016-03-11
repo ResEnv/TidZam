@@ -18,7 +18,8 @@
     "socket.io": "~1.4.4",
     "rimraf": "~2.5.2",
     "ncp": "~2.0.0",
-    "express":"~4.13.3"
+    "express":"~4.13.3",
+    "socket.io-client":"~1.4.5"
   },
 "dependencies": {
   "coffee-script" : "~1.4.x",
