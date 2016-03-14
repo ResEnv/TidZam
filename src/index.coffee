@@ -6,9 +6,10 @@ ncp   		= require('ncp').ncp;
 class controller
 	me = this
 
-	constructor: (port = 1234, source_url = '', chainAPI_url = '') ->
+	constructor: (port = 1234, source_url = '', chainAPI_url = '', chainAPI_site = '') ->
 		me.port = port;
 		me.chainAPI_url = chainAPI_url;
+		me.chainAPI_site = chainAPI_site;
 
 		me.dataset    = new (require('./dataset.js')).Dataset
 
@@ -28,7 +29,7 @@ class controller
 		me.classifier.init()
 
 		if me.chainAPI_url.length > 0
-			chainAPI = new (require('./chainAPI.js')).chainAPI(me.port, me.chainAPI_url)
+			chainAPI = new (require('./chainAPI.js')).chainAPI(me.port, me.chainAPI_url, me.chainAPI_site)
 
 		me.serv.io.on 'connection', (socket) ->
 			me.socket = socket
@@ -162,22 +163,25 @@ class controller
 
 port = 2134
 chainAPI_url = '';
+chainAPI_site = '';
 source_url = '';
 
 BANNER = '''Usage: npm start [options] path/to/script.coffee -- [args]'''
 
 SWITCHES = [
   ['-c', '--chainAPI URL',      'Activate chainAPI plugin']
+	['-cs', '--chainAPI-site SITE',      'Activate chainAPI plugin']
   ['-p', '--port PORT',         'Set output port']
   ['-s', '--source URL',        'Set default input stream']
 ]
 optionParser  = new optparse.OptionParser SWITCHES, BANNER
 
-optionParser.on 'port', (data, value) 		->	port = value
-optionParser.on 'chainAPI', (data, value) ->	chainAPI_url = value
-optionParser.on 'source', (data, value)   ->	source_url = value
+optionParser.on 'port', (data, value) 						->	port = value
+optionParser.on 'chainAPI', (data, value) 				->	chainAPI_url = value
+optionParser.on 'chainAPI-site', (data, value)    ->	chainAPI_site = value
+optionParser.on 'source', (data, value)   			  ->	source_url = value
 
 opts      	  = optionParser.parse process.argv[2..]
 
 
-new controller(port, source_url, chainAPI_url)
+new controller(port, source_url, chainAPI_url, chainAPI_site)
