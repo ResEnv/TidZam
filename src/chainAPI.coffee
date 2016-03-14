@@ -4,6 +4,7 @@ io     = require("socket.io-client")
 class chainAPI
 
   debug_level = 0
+  sample_timestamp = "";
 
   options = {
     hostname: 'chain-api.media.mit.edu',
@@ -14,15 +15,31 @@ class chainAPI
     site: 'tidzam_test',
     site_id: 16
   };
-  constructor: (port) ->
+  constructor: (port, chainAPI_url) ->
     @me = me = this
-    client  = io.connect("http://localhost:1234")
+    options.hostname = chainAPI_url
+    client  = io.connect("http://localhost:" + port)
     @client = client
 
     client.on 'connect', ->
-      me.debug '[chainAPI] Socket.io Client initialized'
+      console.log '[chainAPI] Socket.io Client initialized'
 
     client.on 'sys', (msg) ->
+      try
+
+        obj = JSON.parse(msg)
+        # Compute the timestamp of current sample according to one of input filename
+        if obj.sys.url || 0
+          pos = obj.sys.url.indexOf 'cell3a-'
+          if pos >= 0
+            name = obj.sys.url.substr pos+7, (obj.sys.url.indexOf('.ogg')-(pos+7))
+            sample_timestamp = name.substr(0, 10) + ' ' + name.substr(11).replace(/-/g,':')
+            sample_timestamp = (new Date(sample_timestamp))
+            sample_timestamp = new Date(sample_timestamp.getTime() + 250*obj.sys.sample_count - sample_timestamp.getTimezoneOffset()*60000) # GMT offset due to
+            sample_timestamp = sample_timestamp.toISOString()
+          else sample_timestamp = ''
+      catch err
+        return
       #me.debug '[CHAIN_API] sys event: ' + msg.toString()
 
     last_result = [];
@@ -38,16 +55,12 @@ class chainAPI
 
        # FILTER
       if obj.analysis.result.indexOf('->') != -1 then return
-      #if last_result == obj.analysis.result[0]   then return
-      #last_result = obj.analysis.result[0];
-
       found = false
       for el in last_result
         if el.chan == obj.chan
           if el.value == obj.analysis.result[0] then return
           else el.value = obj.analysis.result[0]
           found = true
-
       if !found then last_result.push({chan:obj.chan, value:obj.analysis.result[0]})
 
       # SELECT or ADD the Device / microphone
@@ -73,14 +86,16 @@ class chainAPI
 
             # PUSH the sensor / classifier output value
             me.addData SensorId, value, (code, res) ->
-              me.debug '[chainAPI]] Push new data for ' + classifier + ': ' + value
+              me.debug '[chainAPI]] Push new data for ' + classifier + ': ' + value + '\n' + res
 
   ###
      Data = Classifier Output
   ###
 
   addData: (SensorId, value, f) ->
-    payload = '{"value": '+value+'}'
+    if sample_timestamp != ''
+      payload = '{"value": '+value+', "timestamp":"'+sample_timestamp+'"}'
+    else payload = '{"value": '+value+'}'
     options.path = '/scalar_data/create?sensor_id='+SensorId
     options.method = 'POST'
     req = http.request options, (res) ->

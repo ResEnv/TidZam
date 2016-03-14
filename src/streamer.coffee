@@ -1,8 +1,10 @@
 spawn = require('child_process').spawn
+fs = require('fs')
 
 class Streamer
   me = this
   me.ctr_buffering = null
+
 
   constructor: (f) ->
     me.buffer_path  = "tmp/"
@@ -13,6 +15,20 @@ class Streamer
     @url = me.url   = "stream.ogg"
     me.state        = "loading"
     me.clb          = f
+    me.streamPath     = @streamPath    = "data/stream/"
+
+  getStreamPath: ->
+    @streamPath
+
+  getStreams: (f) ->
+	  fs.readdir me.streamPath, (err, items) ->
+      if items == null
+        f(-1, "Stream folder empty: " + me.streamPath)
+
+      res = [];
+      for store in items
+        if /ogg/i.test(store) then res.push(store)
+      f(0, res)
 
   getSampleFile: ->
     me.sample_file
@@ -25,20 +41,37 @@ class Streamer
     me.sample_count
 
   startBuffering: (path, f) ->
+
+    ###
+    console.log 'Buffering from ' + path
+    #if path.toString().indexOf('.wav') < 0 and path.indexOf('http:') > 0
+    #  me.ctr_buffering  = spawn 'cp', [path, me.buffer_path]
+
+    #else
+    me.ctr_buffering = spawn 'mpg123', ["-r","48000", "-w", me.buffer_path + 'stream.wav', path]
+    me.ctr_buffering.stderr.on 'data', (data)  ->
+      console.log '** ERROR **Stream buferring :' + path + '( '+ data + ')'
+    me.prototype.initSample()
+    me.prototype.setState('ready')
+    setTimeout me.prototype.play, 1500
+
+
+    ###
     dst = me.buffer_path + 'stream.ogg'
     if isURL (path)
       console.log 'Buffering from url ' + path
-      if me.ctr_buffering
-        me.ctr_bufferin.stdin.pause();
-        me.ctr_buffering.kill()
-      me.ctr_buffering = spawn 'streamripper', [path,"-M","1","-d", me.buffer_path]
-      ctr = spawn 'cp', [me.buffer_path + '/Streamripper_rips/incomplete/ - Title Unknown.ogg', dst]
+      me.ctr_buffering = spawn 'ffmpeg', ["-y", "-r", "48000", "-i", path,  me.buffer_path + 'stream.wav']
+      me.prototype.initSample()
+      me.prototype.setState('ready')
+      setTimeout me.prototype.play, 1500
+
     else
+      path = me.streamPath + path;
       console.log 'Buffering from local file ' + path
       ctr = spawn 'cp', [path, dst]
-    ctr.stderr.on 'data', (data)  -> f(-1, data);
-    ctr.on 'close', (code)        ->  f(0, dst);
-    dst
+      ctr.stderr.on 'data', (data)  ->  f(-1, data);
+      ctr.on 'close', (code)        ->  f(0, dst);
+      dst
 
   convertOggtoWav: (file, f) ->
     dst = me.buffer_path + 'stream.wav'
@@ -47,6 +80,8 @@ class Streamer
     ctr.stderr.on 'data', (data)  ->
     ctr.on 'close', (code)        ->  f(0, dst);
     dst
+
+
 
   loading: ->
     @setState('loading')

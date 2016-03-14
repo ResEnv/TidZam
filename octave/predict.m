@@ -137,7 +137,7 @@ function print_res(res, chan)
 		pred{j} = 'Don t Know';
 
 		% F(c) = | sum_A (P(c/a) )-P(!c/a) |
-		scores = max(sum(scores)/res_hist_size  - 0.75, 0);
+		scores = max(sum(scores)/res_hist_size  - 0.65, 0);
 		for i=1:numel(scores)
 			if scores(i) > 0
 				pred{j} = res_hist{chan}{sample}{i}{1};

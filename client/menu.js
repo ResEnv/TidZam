@@ -13,17 +13,17 @@ function Menu (controller, parent) {
 
   this.parent.innerHTML += '<ul id="menu'+ this.id + '"> \
   <li class="ui-state-disabled">TidMarsh</li>\
-  <li>JSON Sockets\
+  <li>Debug\
   <ul> \
     <li OnClick="controller.openConsole();"> JSON WebSocket</li>\
     <li OnClick="controller.openDataConsole();"> JSON WebSocket data</li>\
   </ul></li>\
   <li OnClick="recorder.show()"> Learning</li>          \
-  <li>Views\
+  <li>Interfaces\
   <ul> \
-  <li OnClick="controller.openPlayer();"> Player </li>\
-  <li OnClick="controller.openSpeakerstats();"> Speaker stats </li>\
-  <li OnClick="controller.openNeuralOutputs();"> Online Chart View</li>\
+  <li OnClick="controller.openPlayer();"> Controller </li>\
+  <li OnClick="controller.openNeuralOutputs();"> Classifier Management</li>\
+  <li OnClick="controller.openSpeakerstats();"> Speaker Recognition Plugin </li>\
   </ul>\
   </li> \
   </ul>\

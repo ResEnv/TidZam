@@ -1,28 +1,34 @@
-rmdir = require('rimraf')
-spawn = require('child_process').spawn
-ncp   = require('ncp').ncp;
+rmdir 		= require('rimraf')
+spawn 		= require('child_process').spawn
+optparse  = require 'optparse'
+ncp   		= require('ncp').ncp;
 
 class controller
 	me = this
 
-	constructor: ->
-		me.port = 1234;
+	constructor: (port = 1234, source_url = '', chainAPI_url = '') ->
+		me.port = port;
+		me.chainAPI_url = chainAPI_url;
+
 		me.dataset    = new (require('./dataset.js')).Dataset
-		me.stream    = new (require('./stream.js')).Stream
 
 		me.serv 		= new (require('./server.js')).Server (me.port)
 		me.serv.start()
 
 		me.streamer 	= new (require('./streamer.js')).Streamer (state)->
 			if me.socket
-				me.serv.io.sockets.emit 'sys', JSON.stringify( {sys: {state:state, sample_count:me.streamer.getSampleCount()} } )
+				me.serv.io.sockets.emit 'sys', JSON.stringify( {sys: {state:state, sample_count:me.streamer.getSampleCount(), url: me.streamer.url} } )
+		me.streamer.url = source_url
+		me.streamer.loading()
+		me.streamer.play()
 
 		me.classifier  = new (require('./classifier.js')).Classifier me.streamer.getSampleFile(), (code, data) ->
 			if me.socket
 				me.serv.io.sockets.emit 'data', data
 		me.classifier.init()
 
-		chainAPI = new (require('./chainAPI.js')).chainAPI(me.port)
+		if me.chainAPI_url.length > 0
+			chainAPI = new (require('./chainAPI.js')).chainAPI(me.port, me.chainAPI_url)
 
 		me.serv.io.on 'connection', (socket) ->
 			me.socket = socket
@@ -55,9 +61,9 @@ class controller
 
 				# RECOGNITION ENGINE INTERFACE EVENTS
 				if sys.control then me.streamer.control(sys.control)
-				if sys.url		 then me.streamer.url = me.stream.getStreamPath() + sys.url
+				if sys.url		 then me.streamer.url = sys.url
 
-				if sys.streams? then me.stream.getStreams (code, data) ->
+				if sys.streams? then me.streamer.getStreams (code, data) ->
 					if !code then me.serv.io.sockets.emit 'sys', JSON.stringify {sys:{streams: data }}
 					else console.log "WARNING Error controller: " + data
 
@@ -152,4 +158,26 @@ class controller
 				if sys.records?.do == 'prev' then me.dataset.getPrevRecord sys.records.show, sys.records.filter_low, sys.records.filter_high, (code,data) ->
 					me.serv.io.sockets.emit 'sys', JSON.stringify {sys:{records:{show:data}}}
 
-new controller()
+
+
+port = 2134
+chainAPI_url = '';
+source_url = '';
+
+BANNER = '''Usage: npm start [options] path/to/script.coffee -- [args]'''
+
+SWITCHES = [
+  ['-c', '--chainAPI URL',      'Activate chainAPI plugin']
+  ['-p', '--port PORT',         'Set output port']
+  ['-s', '--source URL',        'Set default input stream']
+]
+optionParser  = new optparse.OptionParser SWITCHES, BANNER
+
+optionParser.on 'port', (data, value) 		->	port = value
+optionParser.on 'chainAPI', (data, value) ->	chainAPI_url = value
+optionParser.on 'source', (data, value)   ->	source_url = value
+
+opts      	  = optionParser.parse process.argv[2..]
+
+
+new controller(port, source_url, chainAPI_url)

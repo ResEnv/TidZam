@@ -285,7 +285,7 @@ function SpeakerStats(parent, names){
   /******************************************************************************/
 
   var dialog = this.dialog =   $( '#speaker_stats'  ).dialog({
-    autoOpen: true,
+    autoOpen: false,
     width:650,
     modal: false,
     dialogClass: 'speaker_stats',

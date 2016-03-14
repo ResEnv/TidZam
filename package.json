@@ -4,7 +4,8 @@
   "description": "TidMarsh: Bird Learning and Recognition Engine",
   "main": "index.js",
   "scripts": {
-    "start": "node ./dist/index.js",
+    "start": "node dist/index.js --port 8080 --source http://doppler.media.mit.edu:8000/impoundment.ogg --chainAPI chain-api.media.mit.edu",
+    "start-no-chainAPI": "node dist/index.js --port 8080 --source http://doppler.media.mit.edu:8000/impoundment.ogg",
     "install": "sh install.sh",
     "compile": "(coffee --compile --output dist --watch src &);",
     "test": "mocha -w --compilers coffee:coffee-script/register"
@@ -19,8 +20,10 @@
     "rimraf": "~2.5.2",
     "ncp": "~2.0.0",
     "express":"~4.13.3",
-    "socket.io-client":"~1.4.5"
+    "socket.io-client":"~1.4.5",
+    "optparse":"~1.0.5"
   },
+
 "dependencies": {
   "coffee-script" : "~1.4.x",
   "should": "~8.1.1",

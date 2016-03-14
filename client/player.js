@@ -7,13 +7,17 @@ function Player(parent){
   <source src="/stream/" type="audio/wav" />    \
   </audio>                                          \
   <span id="state" style="text-align:center;width:100%;">State</span><br> \
-  OGG Stream:            \
+  Local:            \
   <select id="audio_selection">\
   <option value="/stream/">stream.ogg</option>\
-  </select><br><br>\
+  </select><br>\
+  <div id="remote_div">Remote: <input type="text" id="remote_url" value="http://doppler.media.mit.edu:8000/impoundment.ogg" style="width:350px;"><input type="button" id="remote_button" value="Load"></div>\
+  <br>\
   <div id="results">Results</div>\
   <img src="/fft" id="img_fft">\
   ';
+
+
 
   this.dialog = $( '#dialog-player'  ).dialog({
     autoOpen: true,
@@ -109,7 +113,9 @@ function Player(parent){
   });
 
   $( '#audio_selection'  ).on('change', function(ev, ui){
-    if (socket || 0){
+     if (socket || 0){
+      $( '#remote_div' ).show();
+
       socket.emit('sys', '{ "sys": { "url": "' + $( '#audio_selection option:selected' ).val() + '" } }');
       socket.emit('sys', JSON.stringify(
         {sys:{control:'resume'}}
@@ -118,7 +124,13 @@ function Player(parent){
       $( '#audio_player' ).trigger('play');
     }
     else console.log("no socket");
+    });
+
+  $( '#remote_button'  ).click(function(){
+    socket.emit('sys', '{ "sys": { "url": "' + $( '#remote_url' ).val() + '" } }');
   });
+
+
   /****/
 
   this.show = function(){
@@ -136,10 +148,11 @@ function Player(parent){
       }
 
     if(json.sys)
+      // Reload source selector and add default options: Icecast, Microphone and server streams
       if (json.sys.streams){
         $( '#audio_selection' ).empty();
         $( '#audio_selection' ).append($("<option></option>").attr("value", " "));
-        $( '#audio_selection' ).append($("<option>Microphone</option>").attr("value", "microphone"));
+        $( '#audio_selection' ).append($("<option>Microphone (server)</option>").attr("value", "microphone"));
         for (var i=0; i < json.sys.streams.length; i++)
           $( '#audio_selection' ).append($("<option></option>").attr("value", json.sys.streams[i]).text(json.sys.streams[i]));
         }
