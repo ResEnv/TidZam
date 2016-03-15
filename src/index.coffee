@@ -160,28 +160,13 @@ class controller
 					me.serv.io.sockets.emit 'sys', JSON.stringify {sys:{records:{show:data}}}
 
 
+conf = {}
+conf.port = 2134
+conf.chainAPI_url = '';
+conf.chainAPI_site = '';
+conf.source_url = '';
 
-port = 2134
-chainAPI_url = '';
-chainAPI_site = '';
-source_url = '';
+conf = require('../conf.json')[process.env.NODE_ENV || 'dev'];
+console.log conf
 
-BANNER = '''Usage: npm start [options] path/to/script.coffee -- [args]'''
-
-SWITCHES = [
-  ['-c', '--chainAPI URL',      'Activate chainAPI plugin']
-	['-cs', '--chainAPI-site SITE',      'Activate chainAPI plugin']
-  ['-p', '--port PORT',         'Set output port']
-  ['-s', '--source URL',        'Set default input stream']
-]
-optionParser  = new optparse.OptionParser SWITCHES, BANNER
-
-optionParser.on 'port', (data, value) 						->	port = value
-optionParser.on 'chainAPI', (data, value) 				->	chainAPI_url = value
-optionParser.on 'chainAPI-site', (data, value)    ->	chainAPI_site = value
-optionParser.on 'source', (data, value)   			  ->	source_url = value
-
-opts      	  = optionParser.parse process.argv[2..]
-
-
-new controller(port, source_url, chainAPI_url, chainAPI_site)
+new controller(conf.port, conf.source_url, conf.chainAPI_url, conf.chainAPI_site)

@@ -131,7 +131,6 @@ class Streamer
         #me.prototype.initSample()
 
   play:  () ->
-    console.log 'play'
     if me.state == "pause" || me.state == "terminated"
       me.prototype.setState("ready")
       return
