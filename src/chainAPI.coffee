@@ -15,14 +15,15 @@ class chainAPI
     site: 'tidzam_test',
     site_id: 16
   };
-  constructor: (port, chainAPI_url) ->
+  constructor: (port, chainAPI_url, chainAPI_site) ->
     @me = me = this
     options.hostname = chainAPI_url
+    options.site = chainAPI_site
     client  = io.connect("http://localhost:" + port)
     @client = client
 
     client.on 'connect', ->
-      console.log '[chainAPI] Socket.io Client initialized'
+      console.log '[chainAPI] Socket.io Client initialized on ' + options.hostname + ' (' + options.site + ') '
 
     client.on 'sys', (msg) ->
       try

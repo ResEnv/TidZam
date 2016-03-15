@@ -4,8 +4,8 @@
   "description": "TidMarsh: Bird Learning and Recognition Engine",
   "main": "index.js",
   "scripts": {
-    "start": "nodejs dist/index.js --port 8080 --source http://doppler.media.mit.edu:8000/impoundment.ogg --chainAPI chain-api.media.mit.edu",
-    "start-no-chainAPI": "nodejs dist/index.js --port 8080 --source http://doppler.media.mit.edu:8000/impoundment.ogg",
+    "start": "nodejs dist/index.js --port 80 --chainAPI-site tidzam-test --source http://doppler.media.mit.edu:8000/impoundment.ogg --chainAPI chain-api.media.mit.edu",
+    "start-no-chainAPI": "nodejs dist/index.js --port 80 --source http://doppler.media.mit.edu:8000/impoundment.ogg",
     "install": "sh install.sh",
     "compile": "(coffee --compile --output dist --watch src &);",
     "test": "mocha -w --compilers coffee:coffee-script/register"

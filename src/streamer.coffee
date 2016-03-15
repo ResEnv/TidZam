@@ -121,7 +121,7 @@ class Streamer
           f2(0, "Next sample done");
       else
         f2(-1, "Stream ended");
-        me.prototype.initSample()
+        #me.prototype.initSample()
 
   play:  () ->
     if me.state == "pause" || me.state == "terminated"
@@ -151,7 +151,8 @@ class Streamer
         me.sample_count++
         @getSample (code, msg) ->
           if code == -1
-            state = 'terminated'
+            state = 'ready' #'terminated'
+            me.sample_count--
           else state = 'ready'
           me.prototype.setState(state)
 
