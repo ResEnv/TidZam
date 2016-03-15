@@ -60,10 +60,17 @@ class Streamer
     dst = me.buffer_path + 'stream.ogg'
     if isURL (path)
       console.log 'Buffering from url ' + path
-      me.ctr_buffering = spawn 'ffmpeg', ["-y", "-r", "48000", "-i", path,  me.buffer_path + 'stream.wav']
+      # -fs limit the size of buffer file then reload
+      me.ctr_buffering = spawn 'ffmpeg', ["-y", "-r", "48000", "-i", path, "-fs", 10000000,  me.buffer_path + 'stream.wav']
+      me.ctr_buffering .on 'close', (code) ->
+        if code == 0
+          me.prototype.startBuffering(path, f)
+
       me.prototype.initSample()
       me.prototype.setState('ready')
-      setTimeout me.prototype.play, 1500
+
+      if me.state == "pause" || me.state == "terminated"
+        setTimeout me.prototype.play, 1500
 
     else
       path = me.streamPath + path;
@@ -124,6 +131,7 @@ class Streamer
         #me.prototype.initSample()
 
   play:  () ->
+    console.log 'play'
     if me.state == "pause" || me.state == "terminated"
       me.prototype.setState("ready")
       return
