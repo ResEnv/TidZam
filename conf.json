@@ -1,0 +1,12 @@
+{
+  "prod": {
+	   "port": 8080,
+     "source":"http://doppler.media.mit.edu:8000/impoundment.ogg",
+	   "chainAPI_url": "chain-api.media.mit.edu",
+	   "chainAPI_site": "tidzam-test"
+  },
+  "dev": {
+	   "port": 80,
+     "source":"http://doppler.media.mit.edu:8000/impoundment.ogg"
+  }
+}
