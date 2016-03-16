@@ -27,7 +27,7 @@ class Streamer
 
       res = [];
       for store in items
-        if /ogg/i.test(store) then res.push(store)
+        if /ogg/i.test(store) then res.push(me.streamPath + store)
       f(0, res)
 
   getSampleFile: ->
@@ -41,75 +41,35 @@ class Streamer
     me.sample_count
 
   startBuffering: (path, f) ->
-
-    ###
+    me.ctr_bufferin?.stdin?.pause()
+    me.ctr_buffering?.kill()
     console.log 'Buffering from ' + path
-    #if path.toString().indexOf('.wav') < 0 and path.indexOf('http:') > 0
-    #  me.ctr_buffering  = spawn 'cp', [path, me.buffer_path]
-
-    #else
-    me.ctr_buffering = spawn 'mpg123', ["-r","48000", "-w", me.buffer_path + 'stream.wav', path]
-    me.ctr_buffering.stderr.on 'data', (data)  ->
-      console.log '** ERROR **Stream buferring :' + path + '( '+ data + ')'
-    me.prototype.initSample()
-    me.prototype.setState('ready')
-    setTimeout me.prototype.play, 1500
-
-
-    ###
-    dst = me.buffer_path + 'stream.ogg'
-    if isURL (path)
-      console.log 'Buffering from url ' + path
-      # -fs limit the size of buffer file then reload
-      me.ctr_buffering = spawn 'ffmpeg', ["-y", "-r", "48000", "-i", path, "-fs", 10000000,  me.buffer_path + 'stream.wav']
-      me.ctr_buffering .on 'close', (code) ->
-        if code == 0
-          me.prototype.startBuffering(path, f)
-
-      me.prototype.initSample()
-      me.prototype.setState('ready')
-
-      if me.state == "pause" || me.state == "terminated"
-        setTimeout me.prototype.play, 1500
-
-    else
-      path = me.streamPath + path;
-      console.log 'Buffering from local file ' + path
-      ctr = spawn 'cp', [path, dst]
-      ctr.stderr.on 'data', (data)  ->  f(-1, data);
-      ctr.on 'close', (code)        ->  f(0, dst);
-      dst
-
-  convertOggtoWav: (file, f) ->
-    dst = me.buffer_path + 'stream.wav'
-    console.log 'Converting from '+file+' to '+dst
-    ctr = spawn 'oggdec', ["-o", dst, file]
-    ctr.stderr.on 'data', (data)  ->
-    ctr.on 'close', (code)        ->  f(0, dst);
-    dst
-
+    me.ctr_buffering = spawn 'ffmpeg', ["-y", "-r", "48000", "-i", path, "-fs", 10000000,  me.buffer_path + 'stream.wav']
+    #me.ctr_buffering.stderr.on 'data', (code, data) ->
+    me.ctr_buffering.on 'close', (code) ->
+      # If the source is a stream, then we restart the buffering and replace ole buffer file
+      if code == 0 and path.indexOf('http') > -1
+        console.log '[FFMPEG] Stream terminated'
+        me.prototype.startBuffering(path, f)
+    f(0, "Bufferin started")
 
 
   loading: ->
     @setState('loading')
-    me.ctr_bufferin?.stdin?.pause();
-    me.ctr_buffering?.kill()
 
+    me.prototype.initSample()
     if @url.indexOf('microphone') != -1
       me.ctr_buffering = spawn 'arecord', ["-f","dat",me.buffer_path + 'stream.wav']
       me.ctr_buffering.stdout.on 'data', ->
-      me.prototype.initSample()
       me.prototype.setState('ready')
       setTimeout me.prototype.play, 1500
     else
       @startBuffering @url, (code, data) ->
         if !code || 0
-          me.prototype.convertOggtoWav data, (code, data) ->
-            if !code || 0
-              me.prototype.initSample()
-              me.prototype.setState('ready')
-            else me.prototype.setState('error wav convertion')
-        else me.prototype.setState('error loading')
+            me.prototype.setState('ready')
+        if me.state == "pause" || me.state == "terminated"
+            setTimeout me.prototype.play, 1500
+        else me.prototype.setState('Buffering')
 
   initSample: -> me.sample_count = 0;
   splitSample:  (f) ->
