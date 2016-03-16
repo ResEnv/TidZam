@@ -44,7 +44,7 @@ class Streamer
     me.ctr_bufferin?.stdin?.pause()
     me.ctr_buffering?.kill()
     console.log 'Buffering from ' + path
-    me.ctr_buffering = spawn 'ffmpeg', ["-y", "-r", "48000", "-i", path, "-fs", 10000000,  me.buffer_path + 'stream.wav']
+    me.ctr_buffering = spawn 'ffmpeg', ["-y", "-i", path, "-fs", 10000000, "-ar", "48000", me.buffer_path + 'stream.wav']
     #me.ctr_buffering.stderr.on 'data', (code, data) ->
     me.ctr_buffering.on 'close', (code) ->
       # If the source is a stream, then we restart the buffering and replace ole buffer file
