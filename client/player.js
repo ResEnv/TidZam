@@ -99,7 +99,7 @@ function Player(parent){
     try {
       obj = JSON.parse(msg);
       if (! obj.sys) throw "not a sys object";
-      $('#state').html('State: ' + obj.sys.state + ' sample-id ' + obj.sys.sample_count);
+      $('#state').html('State: ' + obj.sys.state + '<br>Count: ' + obj.sys.sample_count +'<br><br>Source:');
     }
     catch (err){
       console.log("WARNING: player socket error " + err);
