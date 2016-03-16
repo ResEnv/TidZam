@@ -5,8 +5,8 @@
 	   "chainAPI_url": "chain-api.media.mit.edu",
 	   "chainAPI_site": "tidzam-test"
   },
-  "dev": {
-	   "port": 80,
+  "demo": {
+	   "port": 1234,
      "source":"http://doppler.media.mit.edu:8000/impoundment.ogg"
   }
 }

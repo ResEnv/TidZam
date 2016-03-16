@@ -1,9 +1,9 @@
 function SpeakerStats(parent, names){
   this.selectedClass = "";
 
-  var speakers_count = [['Speaker', 'Score']];
+  var PED_count = [['Speaker', 'Score']];
   var plots = this.plots = new Array();
-  parent.innerHTML += '<div id="speaker_stats" title="Speaker Stats"><div id="speaker_stats_piechart" style="width:600px;height:600px; text-align:center;"></div><div id="speaker_stats_lists">No member</div>';
+  parent.innerHTML += '<div id="PED" title="Stream Analysis"><div id="PED_piechart" style="width:600px;height:600px; text-align:center;"></div><div id="PED_lists">No member</div>';
 
 
 // New sample for cl (if cl do not exist, it will be create)
@@ -11,17 +11,17 @@ function SpeakerStats(parent, names){
 /*
 * AUTO RECORD OF NEW SPEAKER
 */
-  new_speaker = "";
-  new_speaker_count = 0;
+  new_PED = "";
+  new_PED_count = 0;
 
   /******************************************************************************/
   /* Views definitions                                                          */
   /******************************************************************************/
 
-  parent.innerHTML += '<div id="progressbar"><div id="progress-label">Loading...</div></div><div id="speaker_stats_new"> ' +
-    ' <div id="speaker_stats_new_init"><input type="text" id="speaker_stats_new_value"><input type="button" value="create" id="speaker_stats_new_button"></div>' +
-      '<div id="speaker_stats_new_progress"> <input type="button" value="stop" id="speaker_stats_stop_button"> '+
-      '<div id="speaker_stats_new_progress_bar"></div>'+
+  parent.innerHTML += '<div id="progressbar"><div id="progress-label">Loading...</div></div><div id="PED_new"> ' +
+    ' <div id="PED_new_init"><input type="text" id="PED_new_value"><input type="button" value="create" id="PED_new_button"></div>' +
+      '<div id="PED_new_progress"> <input type="button" value="stop" id="PED_stop_button"> '+
+      '<div id="PED_new_progress_bar"></div>'+
       "<br><strong>If using microphone,</strong><br>Please talk as clearly as possible while the extraction of samples. <br\> \
                 <br>\
                 Reading some following words can improve record quality and reduce process time ...<br> \
@@ -44,26 +44,26 @@ function SpeakerStats(parent, names){
                 </div>" +
       '</div>'+
   '</div>';
-  $('#speaker_stats_new_progress').hide();
+  $('#PED_new_progress').hide();
 
-  $('#speaker_stats_stop_button').on('click',function(){
+  $('#PED_stop_button').on('click',function(){
     stop_record = true;
   });
 
-  $('#speaker_stats_new_button').on('click',function(){
+  $('#PED_new_button').on('click',function(){
     socket.emit('sys', JSON.stringify( {sys:{control:'pause'}} ));
     setTimeout( function(){
-      //console.log("create " + $('#speaker_stats_new_value').val());
-      new_speaker = $('#speaker_stats_new_value').val();
+      //console.log("create " + $('#PED_new_value').val());
+      new_PED = $('#PED_new_value').val();
       state == "record";
-      new_speaker_count = 0;
+      new_PED_count = 0;
       socket.emit('sys', JSON.stringify( {sys:{control:'next'}} ));
       }, 1000);
-      $('#speaker_stats_new_init').hide();
-      $('#speaker_stats_new_progress').show();
+      $('#PED_new_init').hide();
+      $('#PED_new_progress').show();
   })
 
-  var dialog_new = $("#speaker_stats_new").dialog({
+  var dialog_new = $("#PED_new").dialog({
     autoOpen:false,
     title:'New record',
     width:600,
@@ -97,13 +97,13 @@ function SpeakerStats(parent, names){
 /******************************************************************************/
 /* State machine for voice recording, encoding, training program and learning */
 /******************************************************************************/
-  function speaker_start(){
+  function PED_start(){
     socket.emit('sys', '{ "sys": { "classifier": { "reload": ""}}}');
   }
 
   state_learning = '';
   // generate Training Program
-  function speaker_build_classifier_init(){
+  function PED_build_classifier_init(){
 
     function build_classifier_delay(name){
       setTimeout(function(){
@@ -119,7 +119,7 @@ function SpeakerStats(parent, names){
   }
 
   // If training program is generated, start learning process
-  function speaker_build_classifier(obj){
+  function PED_build_classifier(obj){
     if (state_learning != 'learning') return;
 
     if(obj.sys.dataset)
@@ -191,18 +191,18 @@ function SpeakerStats(parent, names){
   var dataset_list = [];
   lock_loop_new = -1;
 
-  function speaker_stats_new_record  (obj){
+  function PED_new_record  (obj){
 //    console.log(JSON.stringify(obj));
     if (state == "encoding" && obj.sys.records){
-      document.getElementById('speaker_stats_new_progress_bar').innerHTML = "Sample encoding processing, waiting ... " + obj.sys.records.build + "<br>" ;
-      if (obj.sys.records.build == new_speaker && obj.sys.records.status == "done" ){
-        new_speaker = "";
+      document.getElementById('PED_new_progress_bar').innerHTML = "Sample encoding processing, waiting ... " + obj.sys.records.build + "<br>" ;
+      if (obj.sys.records.build == new_PED && obj.sys.records.status == "done" ){
+        new_PED = "";
         state = "record";
-        new_speaker_count = 0;
+        new_PED_count = 0;
         stop_record = false;
         state = "record";
-        $('#speaker_stats_new_init').show();
-        $('#speaker_stats_new_progress').hide();
+        $('#PED_new_init').show();
+        $('#PED_new_progress').hide();
         //console.log("Terminated");
 
         socket.emit('sys', JSON.stringify({sys:{dataset:{list:''}} }));
@@ -213,32 +213,32 @@ function SpeakerStats(parent, names){
 //    if(obj.sys.sample_count == 0 && lock_loop_new > 0)
 //      lock_loop_new = 0;
 
-    if(state == "record" && obj.sys.state == 'ready'  && new_speaker != ""){
+    if(state == "record" && obj.sys.state == 'ready'  && new_PED != ""){
 
-      if (new_speaker_count > 100 || stop_record){
+      if (new_PED_count > 100 || stop_record){
         //console.log("Record Encoding");
         state = "encoding";
-        socket.emit('sys', '{ "sys": { "records": { "build": "' + new_speaker + '" } } }');
+        socket.emit('sys', '{ "sys": { "records": { "build": "' + new_PED + '" } } }');
         socket.emit('sys', JSON.stringify( {sys:{control:'play'}} ));
         //console.log("DONE");
       }
       else if (Math.abs(obj.sys.sample_count - lock_loop_new) <= 1){
 
-        if(obj_data.analysis.result.length == 1 &&  obj_data.analysis.result[0] == "Don t Know" && new_speaker != ""){
+        if(obj_data.analysis.result.length == 1 &&  obj_data.analysis.result[0] == "Don t Know" && new_PED != ""){
           //console.log("save sample\n");
-          socket.emit('sys', JSON.stringify( {sys:{sample: new_speaker+'('+obj_data.chan+')', classe:"+"}} ));
-          new_speaker_count ++;
+          socket.emit('sys', JSON.stringify( {sys:{sample: new_PED+'('+obj_data.chan+')', classe:"+"}} ));
+          new_PED_count ++;
         }
         lock_loop_new = obj.sys.sample_count > lock_loop_new? obj.sys.sample_count: obj.sys.sample_count-1;
         setTimeout(function(){socket.emit('sys', JSON.stringify( {sys:{control:'next'}} ));}, 250);
       }
 
       else lock_loop_new = obj.sys.sample_count;
-      document.getElementById('speaker_stats_new_progress_bar').innerHTML = 'Recording ... ' + new_speaker + " - "+ new_speaker_count +" / 100 samples<br>";
+      document.getElementById('PED_new_progress_bar').innerHTML = 'Recording ... ' + new_PED + " - "+ new_PED_count +" / 100 samples<br>";
     }
   }
 
-  function speaker_stats_update_print(){
+  function PED_update_print(){
     var list = "";
     for (var i=0; i < dataset_list.length; i++){
       if      (dataset_list[i].state == "recorded")     color = "black";
@@ -250,10 +250,10 @@ function SpeakerStats(parent, names){
       list += '<span style="color:'+color+'; margin:10px;">' + dataset_list[i].name + '</span> ';
     }
 
-    $('#speaker_stats_lists').html(list);
+    $('#PED_lists').html(list);
   }
 
-  function speaker_stats_update_dataset_list(obj){
+  function PED_update_dataset_list(obj){
     if (obj.sys.dataset)
     if(obj.sys.dataset.list){
       dataset_list = new Array();
@@ -268,11 +268,11 @@ function SpeakerStats(parent, names){
     try {
       obj = JSON.parse(msg.toString());
 
-      speaker_stats_new_record(obj);
-      speaker_build_classifier(obj);
+      PED_new_record(obj);
+      PED_build_classifier(obj);
 
-      speaker_stats_update_dataset_list(obj);
-      speaker_stats_update_print();
+      PED_update_dataset_list(obj);
+      PED_update_print();
     }
     catch(err){
       console.log("Error on sys: " + err + " MSG received: "+ msg.toString());
@@ -284,33 +284,27 @@ function SpeakerStats(parent, names){
   /* Pie chart view                                                             */
   /******************************************************************************/
 
-  var dialog = this.dialog =   $( '#speaker_stats'  ).dialog({
+  var dialog = this.dialog =   $( '#PED'  ).dialog({
     autoOpen: false,
     width:650,
     modal: false,
-    dialogClass: 'speaker_stats',
+    dialogClass: 'PED',
     buttons:{
-      RESET_ALL: function(){
-        socket.emit('sys', JSON.stringify( {sys:{init:''}}));
-        setTimeout(function(){
-          socket.emit('sys', JSON.stringify({sys:{dataset:{list:''}} }));
-        }, 500);
-      },
-      ADD_SPEAKER: function(){
+      NEW: function(){
         dialog_new.dialog('open');
       },
-      BUILD_ALL: function(){
-        speaker_build_classifier_init();
+      MAKE_ALL: function(){
+        PED_build_classifier_init();
       },
-      START:function(){
-        speakers_count = [['Speaker', 'Score']];
-        speaker_start();
+      START_ALL:function(){
+        PED_count = [['Speaker', 'Score']];
+        PED_start();
       },
     }
   });
 
 
-  var speaker_stats_piechart = new google.visualization.PieChart(document.getElementById('speaker_stats_piechart'));
+  var PED_piechart = new google.visualization.PieChart(document.getElementById('PED_piechart'));
   // Load list of recorded dataset
   setTimeout(function(){
     socket.emit('sys', JSON.stringify({sys:{dataset:{list:''}} }));
@@ -321,9 +315,9 @@ function SpeakerStats(parent, names){
   }
 
   function updatePiechart(){
-    var data = google.visualization.arrayToDataTable(speakers_count);
+    var data = google.visualization.arrayToDataTable(PED_count);
     var options = {
-      title: 'Speaking Time Distribution',
+      title: 'Prediction Event Distribution ',
       is3D: true,
       chartArea:{
         left:10,
@@ -334,7 +328,7 @@ function SpeakerStats(parent, names){
         height:"100%"
         }
     };
-    speaker_stats_piechart.draw(data, options);
+    PED_piechart.draw(data, options);
   }
 
 
@@ -361,13 +355,13 @@ function SpeakerStats(parent, names){
         if (obj.analysis.result[i] == '->')
           continue;
         found = false;
-        for (var j =0; j < speakers_count.length; j++)
-          if (speakers_count[j][0] == obj.analysis.result[i]){
-            speakers_count[j][1] += 1;
+        for (var j =0; j < PED_count.length; j++)
+          if (PED_count[j][0] == obj.analysis.result[i]){
+            PED_count[j][1] += 1;
             found = true;
           }
         if (!found){
-          speakers_count.push([obj.analysis.result[i] , 1]);
+          PED_count.push([obj.analysis.result[i] , 1]);
         }
       }
     updatePiechart();

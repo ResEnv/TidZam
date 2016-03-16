@@ -12,18 +12,21 @@ function Menu (controller, parent) {
   };
 
   this.parent.innerHTML += '<ul id="menu'+ this.id + '"> \
-  <li class="ui-state-disabled">TidMarsh</li>\
-  <li>Debug\
+  <li class="ui-state-disabled">Tid\'Zam</li>\
+  <li>Admin\
   <ul> \
-    <li OnClick="controller.openConsole();"> JSON WebSocket</li>\
+    <li>Init \
+      <ul><li OnClick="controller.raz();">RAZ - Delete All</li></ul>\
+    </li>\
+    <li OnClick="controller.openConsole();">System Console</li>\
     <li OnClick="controller.openDataConsole();"> JSON WebSocket data</li>\
   </ul></li>\
   <li OnClick="recorder.show()"> Learning</li>          \
   <li>Interfaces\
   <ul> \
-  <li OnClick="controller.openPlayer();"> Controller </li>\
-  <li OnClick="controller.openNeuralOutputs();"> Classifier Management</li>\
-  <li OnClick="controller.openSpeakerstats();"> Speaker Recognition Plugin </li>\
+  <li OnClick="controller.openPlayer();">System Control </li>\
+  <li OnClick="controller.openSpeakerstats();">Stream Analysis</li>\
+  <li OnClick="controller.openNeuralOutputs();">Classifier Management</li>\
   </ul>\
   </li> \
   </ul>\

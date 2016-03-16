@@ -46,6 +46,14 @@ function Controller(parent){
 
 
   // WINDOWS CALLER
+  this.raz = function(){
+    socket.emit('sys', JSON.stringify( {sys:{init:''}}));
+    setTimeout(function(){
+      socket.emit('sys', JSON.stringify({sys:{dataset:{list:''}} }));
+    }, 500);
+
+  }
+
   this.openSpeakerstats = function(){
     this.speakerstats.show();
   };

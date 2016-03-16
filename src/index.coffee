@@ -166,7 +166,7 @@ conf.chainAPI_url = '';
 conf.chainAPI_site = '';
 conf.source_url = '';
 
-conf = require('../conf.json')[process.env.NODE_ENV || 'dev'];
+conf = require('../conf.json')[process.env.NODE_ENV || 'demo'];
 console.log conf
 
 new controller(conf.port, conf.source_url, conf.chainAPI_url, conf.chainAPI_site)

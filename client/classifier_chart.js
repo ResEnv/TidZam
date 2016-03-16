@@ -4,7 +4,7 @@ function ClassifierChart(parent, names){
   var plots = this.plots = new Array();
   this.dialog_chart_name = "dialog-neural-outputs";
   parent.innerHTML +=
-  '<div id="'+  this.dialog_chart_name +'" title="Neural Memory"></div>'+
+  '<div id="'+  this.dialog_chart_name +'" title="Classifier Management"></div>'+
   '<div id="dialog-info" title="Details" ></div>' +
   '<div id="dialog-info-img" title="Hidden Layers" ></div>' +
   '<div id="dialog-database-new" title="Record database name">'+
@@ -214,7 +214,7 @@ function Chart (parent, name, classifier_list) {
     'width':'100%',
     chart: {
       title: 'Stream Channel ' + this.name,
-      subtitle: 'Deep Belief Network Units'
+      subtitle: 'Deep Belief Network Classifiers'
     },
     axes: 	{
       x: {0: {side: 'bottom'}}
