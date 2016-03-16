@@ -123,15 +123,18 @@ class chainAPI
     options.method = 'GET'
     req = http.request options, (res) ->
       res.on 'data', (d) =>
-        obj = JSON.parse(d)
-        done = false
-        for element in obj._links.items
-          if element.title == SensorName
-            done = true
-            id = element.href.substr 15+element.href.search /scalar_sensors/
-            f(0, SensorName, id)
-        if done == false
-          f(-1, SensorName)
+        try
+          obj = JSON.parse(d)
+          done = false
+          for element in obj._links.items
+            if element.title == SensorName
+              done = true
+              id = element.href.substr 15+element.href.search /scalar_sensors/
+              f(0, SensorName, id)
+          if done == false
+            f(-1, SensorName)
+        catch err
+          console.error "[chainAPI] getSensorID " + err
     req.end();
     req.on 'error', (e) => f(-2, SensorName)
 
@@ -154,15 +157,18 @@ class chainAPI
     options.method = 'GET'
     req = http.request options, (res) ->
       res.on 'data', (d) =>
-        obj = JSON.parse(d)
-        done = false
-        for element in obj._links.items
-          if element.title == DeviceName
-            done = true
-            id = element.href.substr 8+element.href.search /devices/
-            f(0, DeviceName, id)
-        if done == false
-          f(-1, DeviceName)
+        try
+          obj = JSON.parse(d)
+          done = false
+          for element in obj._links.items
+            if element.title == DeviceName
+              done = true
+              id = element.href.substr 8+element.href.search /devices/
+              f(0, DeviceName, id)
+          if done == false
+            f(-1, DeviceName)
+        catch err
+          console.error "[chainAPI] getSensorID " + err
     req.end();
     req.on 'error', (e) => f(-2, DeviceName)
 
