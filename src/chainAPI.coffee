@@ -122,7 +122,13 @@ class chainAPI
     options.path = '/sensors/?device_id='+DeviceId
     options.method = 'GET'
     req = http.request options, (res) ->
+      buf = ''
       res.on 'data', (d) =>
+        buf += d.toString()
+
+      res.on 'end', () =>
+        d = buf
+        #console.log d.toString() + '\n\n'
         try
           obj = JSON.parse(d)
           done = false
