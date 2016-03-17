@@ -56,6 +56,7 @@ class Streamer
       if code == 0 and path.indexOf('http') > -1
         console.log '[FFMPEG] Stream terminated'
         me.prototype.startBuffering(path, f)
+        me.prototype.initSample()
     f(0, "Bufferin started")
 
 
