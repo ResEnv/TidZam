@@ -55,15 +55,22 @@ class chainAPI
         return
 
        # FILTER
-      if obj.analysis.result.indexOf('->') != -1 then return
+      if obj.analysis.result.indexOf('->') != -1
+         return
       found = false
       for el in last_result
         if el.chan == obj.chan
           if el.value == obj.analysis.result[0] then return
           else el.value = obj.analysis.result[0]
           found = true
+      # If the channel is not yet registered, create its history
       if !found then last_result.push({chan:obj.chan, value:obj.analysis.result[0]})
+#      else return
 
+      if obj.analysis.result.indexOf('Nothing') != -1 or obj.analysis.result.indexOf('Don t Know') != -1
+        return
+
+      console.log 'New result : '+  obj.analysis.result
       # SELECT or ADD the Device / microphone
       device = "audio-stream_" + obj.chan
       me.getDeviceId device, (code, DeviceName, DeviceId) ->
