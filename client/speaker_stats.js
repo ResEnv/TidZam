@@ -52,13 +52,15 @@ function SpeakerStats(parent, names){
 
   $('#PED_new_button').on('click',function(){
     socket.emit('sys', JSON.stringify( {sys:{control:'pause'}} ));
+
     setTimeout( function(){
-      //console.log("create " + $('#PED_new_value').val());
+      console.log("create " + $('#PED_new_value').val());
       new_PED = $('#PED_new_value').val();
       state == "record";
       new_PED_count = 0;
+      lock_loop_new = sample_count
       socket.emit('sys', JSON.stringify( {sys:{control:'next'}} ));
-      }, 1000);
+    }, 3000);
       $('#PED_new_init').hide();
       $('#PED_new_progress').show();
   })
@@ -190,9 +192,13 @@ function SpeakerStats(parent, names){
   stop_record = false;
   var dataset_list = [];
   lock_loop_new = -1;
+  var sample_count = -1;
 
   function PED_new_record  (obj){
 //    console.log(JSON.stringify(obj));
+
+    if (obj.sys.sample_count) sample_count = obj.sys.sample_count;
+
     if (state == "encoding" && obj.sys.records){
       document.getElementById('PED_new_progress_bar').innerHTML = "Sample encoding processing, waiting ... " + obj.sys.records.build + "<br>" ;
       if (obj.sys.records.build == new_PED && obj.sys.records.status == "done" ){
