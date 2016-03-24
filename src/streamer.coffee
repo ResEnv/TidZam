@@ -1,5 +1,6 @@
 spawn = require('child_process').spawn
 fs = require('fs')
+read_dir = require('fs-readdir-recursive')
 
 class Streamer
   me = this
@@ -21,14 +22,16 @@ class Streamer
     @streamPath
 
   getStreams: (f) ->
-	  fs.readdir me.streamPath, (err, items) ->
-      if items == null
-        f(-1, "Stream folder empty: " + me.streamPath)
+    items = read_dir me.streamPath
+    if items.length == 0
+      f(-1, "Stream folder empty: " + me.streamPath)
 
-      res = [];
-      for store in items
-        if /ogg/i.test(store) then res.push(me.streamPath + store)
-      f(0, res)
+    res = [];
+    for store in items
+      # if /ogg/i.test(store) then res.push(me.streamPath + store)
+      res.push(me.streamPath + store)
+
+    f(0, res)
 
   getSampleFile: ->
     me.sample_file
