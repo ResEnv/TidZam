@@ -1,6 +1,6 @@
 rmdir 		= require('rimraf')
 spawn 		= require('child_process').spawn
-optparse  = require 'optparse'
+optparse  	= require 'optparse'
 ncp   		= require('ncp').ncp;
 
 class controller

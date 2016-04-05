@@ -14,6 +14,11 @@ class Dataset
     folder = me.databasePath + '/' + name.substr(0,name.indexOf('(')) + '/';
     fs.mkdir folder, (code, data) ->
       dst =  folder + cl + name + '_'+ new Date().getTime() + '.wav'
+      stats = fs.statSync sample_file_path
+      if stats["size"] != 96044
+        f?(-1,"stream ended")
+        return
+
       ctr = spawn 'cp', [sample_file_path, dst]
       ctr.stderr.on 'data', (data)  -> f?(-1, data);
       ctr.on 'close', (code)        -> f?(0, dst);
