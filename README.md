@@ -1,25 +1,32 @@
 # TidZam
 
-TidZam is a web-based software interested in living form (birg, frog, etc) geo-localization from multi-sourced live audio  captures from TidMarsh Environment. A multi-channel OGG stream is presented to a recongition engine based on Reinforced Deep Belief Networks (RDBM). Its 2-binary classifiers denoted Knowledge Units (KUs) are trained from multi-sourced realtime  captures for audio context learning.
+TidZam is a web-based software interested in wildlife sound recongition (birg, frog, etc) from raw live audio stream. A multi-channel OGG stream is presented to a pull of classifiers based on Stacked Auto-Encoder with feature self-extraction based on Restricted Boltzman Machine. The input multi-channel stream is provided by an icecast platform and transformed into spectrogram samples (50 Hz to 15 Khz over 500 ms) overlapped by factor of 0.5 to avoid to miss cut samples. They are presented to a pull of binary classifiers which are triggered if their learnt signal is matched (animal call, mechanical noise, etc). Each input sample acrosses a Pass Band Filter depending of each classifier to determine a Region of Interest to analyze. This step reduces the complexity of classifier task  thanks to a focus on the frequency range of the signal. Finally a decision function determines if the classifier outputs are consistent over the time window of 1.25 secondes (4 samples). If none of the classifiers is triggered, the signal is considered unknown and it is stored in the record database until its identification by experts.
+![alt tag](http://duhart-clement.fr/imgs/tidzam-overview.png)
+	Based on the Web interface, experts listen unknown signals in order to associate them to a category or create a new one. For example if a new kind of sound is registered like plane noise, the expert can create a new dataset to create a new classifier. By the same way, a classifier could be improoved by adding new samples. Learning process is composed of two main steps. Firstly the system builds a training program in order to generate efficient training and evaluation datasets which are transmitted to the deeplearning stack to create or improove a classifier. The classifiers are autonomous and therefore can be loaded and unloaded online.
+	
+* Play Online: http://tidzam.media.mit.edu/client/index.html/
 
-* Semantic learning is trained on a particular kind of sound like bird calls, human voice, clicks, etc in order to geo-localized them in multi-channel audio stream. According to the policy of the training dataset generation, the sound can be more or less specialized according to the others (KUs). A good idea is the learning of  Nothing (KU) in order to detect new unknown sounds.
+# Demo
+[![ScreenShot](http://duhart-clement.fr/imgs/demo.png)](https://youtu.be/XT93JgFPfqA)
+Play Online: http://tidmarsh.duhart-clement.fr/client/index.html
 
-* Context learning is trained by aggregated multi-sourced live audio captures in order to learn global  variables of the audio environment. Self-fealturing extraction by Restricted Boltzman Machine (RBM) is used to reduce drastically input dimension. Several neural architectures can be selected for (KU) such as (RBM), Convolutional Neural Network (CNN) and Stacked Auto-Encoder (SAE).
-
-Other Interests in Click Echo Recognition in human echo-localization.
-
-* Play Online: http://tidmarsh.duhart-clement.fr/
-
-* HowTo: http://tidmarsh.duhart-clement.fr/client/doc/demo.mov 
 
 # Installation
 
+```
 npm install
+```
+
+# Compilation
+
+```
+npm run compile
+```
 
 # Starting
 ```
 npm start
 ```
-# Demo
-[![ScreenShot](http://duhart-clement.fr/imgs/demo.png)](https://youtu.be/XT93JgFPfqA)
-Play Online: http://tidmarsh.duhart-clement.fr/client/index.html
+
+
+
